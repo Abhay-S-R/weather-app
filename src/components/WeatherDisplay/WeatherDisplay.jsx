@@ -53,7 +53,10 @@ function WeatherDisplay({ weather }) {
 
   return (
     <div className="weather-display">
-      <h2 className="city-name">{weather.city}</h2>
+      <h2 className="city-name">
+        {weather.city}
+        {weather.state && `, ${weather.state}`}, {weather.country}
+      </h2>
 
       <div className="weather-hero">
         <img className="weather-icon" src={iconUrl} alt={weather.description} />

@@ -41,6 +41,66 @@
   animation-delay: 0.1s;
 }
 
+/* Search wrapper for dropdown positioning */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  z-index: 100;
+  animation: fade-in-up 0.7s var(--transition-smooth) both;
+  animation-delay: 0.1s;
+}
+
+/* Suggestions dropdown */
+.suggestions-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  list-style: none;
+  background: rgba(26, 26, 46, 0.85);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 1000;
+  animation: fade-in-up 0.25s ease both;
+}
+
+.suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    padding-left var(--transition-fast);
+}
+
+.suggestion-item:hover {
+  background: rgba(108, 99, 255, 0.12);
+  padding-left: 1.4rem;
+}
+
+.suggestion-item + .suggestion-item {
+  border-top: 1px solid var(--border-glass);
+}
+
+.suggestion-name {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.suggestion-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 .input-container:focus-within {
   border-color: var(--accent);
   box-shadow: var(--shadow-glow);
