@@ -1,6 +1,6 @@
 import "./HomePage.css";
 import { useState } from "react";
-import WeatherDisplay from "../components/WeatherDisplay";
+import WeatherDisplay from "../components/WeatherDisplay"
 import { toLocalTime } from "../utils/localTime.js";
 
 function HomePage() {
@@ -8,7 +8,7 @@ function HomePage() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const handleSearch = async (city) => {
     if (!city.trim()) {
       setError("Please enter a city name");
@@ -26,10 +26,10 @@ function HomePage() {
       const geoData = await geoResponse.json();
       console.log(geoData);
 
-      if(!geoResponse.ok) throw new Error("Failed to fetch geo data");
-      if(geoData.length === 0) throw new Error("City not found")
+      if (!geoResponse.ok) throw new Error("Failed to fetch geo data");
+      if (geoData.length === 0) throw new Error("City not found");
 
-      const {lat, lon, name} = geoData[0];
+      const { lat, lon, name } = geoData[0];
 
       const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
       const weatherResponse = await fetch(weatherUrl);
@@ -69,11 +69,16 @@ function HomePage() {
 
   return (
     <>
+      <header className="app-header">
+        <h1 className="app-title">Havāmāna</h1>
+        <p className="app-subtitle">Real-time weather, anywhere in the world</p>
+      </header>
+
       <div className="input-container">
         <input
           type="text"
           className="location-input"
-          placeholder="Enter city name"
+          placeholder="Search for a city..."
           value={locInput}
           onChange={(e) => setLocInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch(locInput)}
@@ -84,7 +89,7 @@ function HomePage() {
           onClick={() => handleSearch(locInput)}
           disabled={loading}
         >
-          {loading ? "Searching..." : "Enter"}
+          {loading ? "Searching..." : "Search"}
         </button>
       </div>
 

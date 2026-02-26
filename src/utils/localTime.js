@@ -1,4 +1,4 @@
-//uEverything is in milliseconds
+//Everything is in milliseconds
 export function toLocalTime(unixTime, timeMilliSecs, showSeconds=false){
   const date = new Date(unixTime+timeMilliSecs);
   const hours = String(date.getUTCHours()).padStart(2, "0");
