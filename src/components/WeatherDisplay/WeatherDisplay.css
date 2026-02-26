@@ -33,7 +33,19 @@
   margin-bottom: 0.2rem;
 }
 
-/* Hero temperature */
+/* Hero: icon + temperature side by side */
+.weather-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.weather-icon {
+  width: 72px;
+  height: 72px;
+  filter: drop-shadow(0 0 6px rgba(108, 99, 255, 0.3));
+}
+
 .weather-display .temperature {
   font-size: 4rem;
   font-weight: 700;
@@ -42,16 +54,47 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
-  margin: 0.4rem 0 0.15rem;
 }
 
-/* Weather description */
 .weather-display .description {
   font-size: 1.05rem;
   color: var(--text-secondary);
   text-transform: capitalize;
   margin-bottom: 1.4rem;
   font-weight: 400;
+}
+
+/* Toggle buttons row */
+.toggle-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.unit-toggle-btn {
+  display: inline-block;
+  margin-bottom: 1.4rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.unit-toggle-btn:hover {
+  color: #fff;
+  background: var(--gradient-hero);
+  border-color: transparent;
+  transform: scale(1.04);
 }
 
 /* Detail grid */
@@ -79,13 +122,6 @@
   transform: translateY(-2px);
 }
 
-.detail-icon {
-  font-size: 1.25rem;
-  flex-shrink: 0;
-  width: 28px;
-  text-align: center;
-}
-
 .detail-content {
   display: flex;
   flex-direction: column;
@@ -109,6 +145,181 @@
   text-overflow: ellipsis;
 }
 
+/* Visibility card – spans full width */
+.visibility-item {
+  grid-column: 1 / -1;
+}
+
+.visibility-tip {
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* Wind widget – full-width card below the grid */
+.wind-widget {
+  margin-top: 0.65rem;
+  padding: 1rem 1.1rem;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.wind-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+}
+
+.wind-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+}
+
+.wind-body {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+}
+
+/* Direction compass */
+.wind-direction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.wind-arrow {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--accent-secondary);
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  border-radius: 50%;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wind-deg-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.wind-speed-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.wind-speed-display {
+  margin-bottom: 0.35rem;
+}
+
+.wind-speed-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.wind-speed-unit {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* Tabs + toggle row */
+.wind-speed-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wind-tab {
+  position: relative;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: default;
+  transition: color var(--transition-fast);
+}
+
+.wind-tab.active {
+  color: var(--accent-secondary);
+}
+
+/* Tooltip on hover */
+.wind-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  z-index: 10;
+}
+
+.wind-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--bg-secondary);
+}
+
+.wind-tab:hover .wind-tooltip {
+  opacity: 1;
+}
+
+/* Toggle button */
+.wind-toggle-btn {
+  padding: 0.25rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.wind-toggle-btn:hover {
+  color: #fff;
+  background: var(--gradient-hero);
+  border-color: transparent;
+}
+
 /* Responsive adjustments */
 @media (max-width: 500px) {
   .weather-display {
@@ -121,5 +332,14 @@
 
   .weather-details-grid {
     grid-template-columns: 1fr;
+  }
+
+  .wind-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wind-tooltip {
+    width: 160px;
   }
 }
