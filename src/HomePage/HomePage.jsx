@@ -7,6 +7,25 @@ const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
 //All API responses are in seconds
 
+//WeatherAPI
+const fetchWeatherData = async (lat, lon, name, state, country) => {
+  const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+  const weatherResponse = await fetch(weatherUrl);
+  if (!weatherResponse.ok) {
+    throw new Error("Failed to fetch weather data");
+  }
+  const data = await weatherResponse.json();
+  return buildWeatherData(data, name, state, country);
+};
+
+//GeoCoding API
+const fetchGeoData = async (query, limit = 1) => {
+  const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=${limit}&appid=${API_KEY}`;
+  const geoResponse = await fetch(geoUrl);
+  const geoData = await geoResponse.json();
+  return { geoResponse, geoData };
+};
+
 function HomePage() {
   const [locInput, setLocInput] = useState("");
   const [weather, setWeather] = useState(null);
@@ -17,9 +36,9 @@ function HomePage() {
 
   const dropdownRef = useRef(null);
   const debounceRef = useRef(null);
-  const inputBlurRef = useRef(null);
+  const inputRef = useRef(null);
 
-  const [saveHistory, setSaveHistory] = useState(() => {
+  const [searchHistory, setSearchHistory] = useState(() => {
     const saved = localStorage.getItem("weather-history");
     return saved ? JSON.parse(saved) : [];
   });
@@ -27,7 +46,7 @@ function HomePage() {
 
   useEffect(() => {
     if (weather) {
-      setSaveHistory((prev) => {
+      setSearchHistory((prev) => {
         // Deduplicate by city + country
         const filtered = prev.filter(
           (h) => !(h.city === weather.city && h.country === weather.country),
@@ -72,9 +91,7 @@ function HomePage() {
 
   const fetchSuggestions = async (query) => {
     try {
-      const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${API_KEY}`;
-      const geoResponse = await fetch(geoUrl);
-      const geoData = await geoResponse.json();
+      const { geoData } = await fetchGeoData(query, 5);
 
       if (geoData.length > 0) {
         setSuggestions(geoData);
@@ -98,21 +115,18 @@ function HomePage() {
     setShowSuggestions(false);
     setLocInput("");
     setSuggestions([]);
-    inputBlurRef.current?.blur();
+    inputRef.current?.blur();
     setShowHistory(false);
 
     try {
       const { lat, lon, name, state, country } = suggestion;
-
-      const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
-      const weatherResponse = await fetch(weatherUrl);
-
-      if (!weatherResponse.ok) {
-        throw new Error("Failed to fetch weather data");
-      }
-
-      const data = await weatherResponse.json();
-      const weatherData = buildWeatherData(data, name, state, country);
+      const weatherData = await fetchWeatherData(
+        lat,
+        lon,
+        name,
+        state,
+        country,
+      );
       setWeather(weatherData);
     } catch (err) {
       setError(err.message);
@@ -136,29 +150,21 @@ function HomePage() {
     setSuggestions([]);
 
     try {
-      const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`;
-      const geoResponse = await fetch(geoUrl);
-      const geoData = await geoResponse.json();
-
+      const { geoResponse, geoData } = await fetchGeoData(city);
       if (!geoResponse.ok) throw new Error("Failed to fetch geo data");
       if (geoData.length === 0) throw new Error("City not found");
 
       const { lat, lon, name, state, country } = geoData[0];
-
-      const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
-      const weatherResponse = await fetch(weatherUrl);
-
-      if (!weatherResponse.ok) {
-        if (weatherResponse.status === 404)
-          throw new Error("City not found please try again");
-        else throw new Error("Failed to fetch weather data");
-      }
-
-      const data = await weatherResponse.json();
-      const weatherData = buildWeatherData(data, name, state, country);
+      const weatherData = await fetchWeatherData(
+        lat,
+        lon,
+        name,
+        state,
+        country,
+      );
       setWeather(weatherData);
       setLocInput("");
-      inputBlurRef.current?.blur();
+      inputRef.current?.blur();
       setShowHistory(false);
     } catch (err) {
       setError(err.message);
@@ -178,7 +184,7 @@ function HomePage() {
       <div className="search-wrapper" ref={dropdownRef}>
         <div className="input-container">
           <input
-            ref={inputBlurRef}
+            ref={inputRef}
             type="text"
             className="location-input"
             placeholder="Search for a city..."
@@ -191,7 +197,7 @@ function HomePage() {
             }}
             onKeyDown={(e) => e.key === "Enter" && textSearch(locInput)}
             onFocus={() => {
-              if (locInput.length === 0 && saveHistory.length > 0) {
+              if (locInput.length === 0 && searchHistory.length > 0) {
                 setShowHistory(true);
                 setShowSuggestions(false);
               } else if (suggestions.length > 0) {
@@ -226,14 +232,14 @@ function HomePage() {
           </ul>
         )}
 
-        {showHistory && !showSuggestions && saveHistory.length > 0 && (
+        {showHistory && !showSuggestions && searchHistory.length > 0 && (
           <ul className="suggestions-list history-list">
             <li className="history-header">
               <span>Recent searches</span>
               <button
                 className="clear-history-btn"
                 onClick={() => {
-                  setSaveHistory([]);
+                  setSearchHistory([]);
                   localStorage.removeItem("weather-history");
                   setShowHistory(false);
                 }}
@@ -241,7 +247,7 @@ function HomePage() {
                 Clear
               </button>
             </li>
-            {[...saveHistory].reverse().map((h, idx) => (
+            {[...searchHistory].reverse().map((h, idx) => (
               <li
                 key={`${h.city}-${h.country}-${idx}`}
                 className="suggestion-item history-item"
