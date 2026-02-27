@@ -199,3 +199,38 @@
   font-size: 0.95rem;
   font-weight: 400;
 }
+
+/* History dropdown */
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.clear-history-btn {
+  background: none;
+  border: none;
+  color: var(--accent-warm, #ff6b6b);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm, 4px);
+  transition:
+    background var(--transition-fast),
+    opacity var(--transition-fast);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.clear-history-btn:hover {
+  background: rgba(255, 107, 107, 0.12);
+  opacity: 0.9;
+}
