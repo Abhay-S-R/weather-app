@@ -44,6 +44,8 @@ function HomePage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [inputFocused, setInputFocused] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const [prevBgUrl, setPrevBgUrl] = useState(null);
 
   const dropdownRef = useRef(null);
   const debounceRef = useRef(null);
@@ -152,8 +154,8 @@ function HomePage() {
   // Fetch weather using lat/lon directly (used by suggestion clicks, not directly by user)
   const fetchWeatherByCoords = async (suggestion) => {
     setError(null);
-    setWeather(null);
     setLoading(true);
+    setTransitioning(true);
     setShowSuggestions(false);
     setLocInput("");
     setSuggestions([]);
@@ -169,12 +171,16 @@ function HomePage() {
         state,
         country,
       );
+      setPrevBgUrl(getBackground(weather?.icon));
+      // Wait for fade-out to complete before showing new data
+      await new Promise((r) => setTimeout(r, 400));
       setWeather(weatherData);
     } catch (err) {
       setError(err.message);
       console.error("error: ", err);
     } finally {
       setLoading(false);
+      setTimeout(() => setTransitioning(false), 400);
     }
   };
 
@@ -186,8 +192,8 @@ function HomePage() {
     }
 
     setError(null);
-    setWeather(null);
     setLoading(true);
+    setTransitioning(true);
     setShowSuggestions(false);
     setSuggestions([]);
 
@@ -204,6 +210,8 @@ function HomePage() {
         state,
         country,
       );
+      setPrevBgUrl(getBackground(weather?.icon));
+      await new Promise((r) => setTimeout(r, 400));
       setWeather(weatherData);
       setLocInput("");
       inputRef.current?.blur();
@@ -213,6 +221,7 @@ function HomePage() {
       console.error("error: ", err);
     } finally {
       setLoading(false);
+      setTimeout(() => setTransitioning(false), 400);
     }
   };
 
@@ -262,9 +271,17 @@ function HomePage() {
 
   return (
     <>
+      {/* Previous background for crossfade */}
+      {prevBgUrl && prevBgUrl !== bgUrl && (
+        <div
+          className="weather-bg active"
+          style={{ backgroundImage: `url(${prevBgUrl})` }}
+        />
+      )}
       <div
         className={`weather-bg ${bgUrl ? "active" : ""}`}
         style={bgUrl ? { backgroundImage: `url(${bgUrl})` } : {}}
+        onTransitionEnd={() => setPrevBgUrl(null)}
       />
       <header className="app-header">
         <h1 className="app-title">Havāmāna</h1>
@@ -384,13 +401,13 @@ function HomePage() {
                 onClick={() => {
                   setInputFocused(false);
                   setShowHistory(false);
-                    fetchWeatherByCoords({
-                      lat: h.lat,
-                      lon: h.lon,
-                      name: h.city,
-                      state: h.state,
-                      country: h.country,
-                    });
+                  fetchWeatherByCoords({
+                    lat: h.lat,
+                    lon: h.lon,
+                    name: h.city,
+                    state: h.state,
+                    country: h.country,
+                  });
                 }}
               >
                 <span className="suggestion-name">🕐 {h.city}</span>
@@ -432,8 +449,12 @@ function HomePage() {
         </div>
       )}
 
-      <WeatherDisplay weather={weather} />
-      <ChatPanel weather={weather} />
+      <div
+        className={`weather-content ${transitioning ? "transitioning" : ""}`}
+      >
+        <WeatherDisplay weather={weather} />
+        <ChatPanel weather={weather} />
+      </div>
     </>
   );
 }
