@@ -4,6 +4,7 @@ export function buildWeatherData(data, name, state, country) {
   const timeSecs = data.timezone / 3600;
 
   const weatherData = {
+    id: data.weather[0].id, 
     city: name,
     state: state || null,
     country: country,

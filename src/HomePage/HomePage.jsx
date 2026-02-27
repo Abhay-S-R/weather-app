@@ -1,6 +1,7 @@
 import "./HomePage.css";
 import { useState, useEffect, useRef } from "react";
 import WeatherDisplay from "../components/WeatherDisplay";
+import ChatPanel from "../components/ChatPanel";
 import { buildWeatherData } from "../utils/buildWeatherData.js";
 import { getBackground } from "../utils/getBackground.js";
 
@@ -289,6 +290,7 @@ function HomePage() {
       )}
 
       <WeatherDisplay weather={weather} />
+      <ChatPanel weather={weather} />
     </>
   );
 }
