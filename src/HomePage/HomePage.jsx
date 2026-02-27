@@ -2,6 +2,7 @@ import "./HomePage.css";
 import { useState, useEffect, useRef } from "react";
 import WeatherDisplay from "../components/WeatherDisplay";
 import { buildWeatherData } from "../utils/buildWeatherData.js";
+import { getBackground } from "../utils/getBackground.js";
 
 const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
@@ -174,8 +175,14 @@ function HomePage() {
     }
   };
 
+  const bgUrl = getBackground(weather?.icon);
+
   return (
     <>
+      <div
+        className={`weather-bg ${bgUrl ? "active" : ""}`}
+        style={bgUrl ? { backgroundImage: `url(${bgUrl})` } : {}}
+      />
       <header className="app-header">
         <h1 className="app-title">Havāmāna</h1>
         <p className="app-subtitle">Real-time weather, anywhere in the world</p>

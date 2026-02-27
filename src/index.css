@@ -104,6 +104,31 @@ body::before {
   z-index: 0;
 }
 
+/* Dynamic weather background */
+.weather-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+  will-change: opacity;
+}
+
+.weather-bg.active {
+  opacity: 1;
+}
+
+.weather-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
 @keyframes ambient-drift {
   0% {
     transform: translate(0, 0) rotate(0deg);
