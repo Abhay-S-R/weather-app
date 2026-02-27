@@ -4,7 +4,9 @@ export function buildWeatherData(data, name, state, country) {
   const timeSecs = data.timezone / 3600;
 
   const weatherData = {
-    id: data.weather[0].id, 
+    id: data.weather[0].id,
+    lat: data.coord.lat,
+    lon: data.coord.lon,
     city: name,
     state: state || null,
     country: country,
@@ -29,4 +31,3 @@ export function buildWeatherData(data, name, state, country) {
 
   return weatherData;
 }
-

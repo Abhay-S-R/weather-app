@@ -20,9 +20,17 @@ const fetchWeatherData = async (lat, lon, name, state, country) => {
   return buildWeatherData(data, name, state, country);
 };
 
-//GeoCoding API
+//GeoCoding API - direct
 const fetchGeoData = async (query, limit = 1) => {
   const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=${limit}&appid=${API_KEY}`;
+  const geoResponse = await fetch(geoUrl);
+  const geoData = await geoResponse.json();
+  return { geoResponse, geoData };
+};
+
+//GeoCoding API - reverse
+const fetchReverseGeoData = async (lat, lon) => {
+  const geoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
   const geoResponse = await fetch(geoUrl);
   const geoData = await geoResponse.json();
   return { geoResponse, geoData };
@@ -35,6 +43,7 @@ function HomePage() {
   const [error, setError] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [inputFocused, setInputFocused] = useState(false);
 
   const dropdownRef = useRef(null);
   const debounceRef = useRef(null);
@@ -85,10 +94,41 @@ function HomePage() {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setShowSuggestions(false);
         setShowHistory(false);
+        setInputFocused(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const getIpData = async () => {
+      try {
+        const ipData = await fetch("https://get.geojs.io/v1/ip/geo.json").then(
+          (r) => r.json(),
+        );
+        if (cancelled) return;
+
+        const weatherData = await fetchWeatherData(
+          parseFloat(ipData.latitude),
+          parseFloat(ipData.longitude),
+          ipData.city,
+          ipData.region,
+          ipData.country_code,
+        );
+        if (!cancelled) setWeather(weatherData);
+      } catch (err) {
+        console.error("Failed to fetch IP data", err);
+      }
+    };
+
+    getIpData();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const fetchSuggestions = async (query) => {
@@ -176,6 +216,48 @@ function HomePage() {
     }
   };
 
+  //IP based search
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          // reverse geocode to get city name from coords
+          const { geoData } = await fetchReverseGeoData(latitude, longitude);
+          if (geoData.length === 0)
+            throw new Error("Could not determine your city");
+
+          const { name, state, country } = geoData[0];
+          const weatherData = await fetchWeatherData(
+            latitude,
+            longitude,
+            name,
+            state,
+            country,
+          );
+          setWeather(weatherData);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      },
+      (err) => {
+        setLoading(false);
+        setError("Location access denied — please enable location permissions");
+        console.error(err);
+      },
+    );
+  };
+
   const bgUrl = getBackground(weather?.icon);
 
   return (
@@ -203,8 +285,14 @@ function HomePage() {
                 setShowHistory(false);
               }
             }}
-            onKeyDown={(e) => e.key === "Enter" && textSearch(locInput)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setInputFocused(false);
+                textSearch(locInput);
+              }
+            }}
             onFocus={() => {
+              setInputFocused(true);
               if (locInput.length === 0 && searchHistory.length > 0) {
                 setShowHistory(true);
                 setShowSuggestions(false);
@@ -216,7 +304,10 @@ function HomePage() {
           />
           <button
             className="location-enter-btn"
-            onClick={() => textSearch(locInput)}
+            onClick={() => {
+              setInputFocused(false);
+              textSearch(locInput);
+            }}
             disabled={loading}
           >
             {loading ? "Searching..." : "Search"}
@@ -225,11 +316,28 @@ function HomePage() {
 
         {showSuggestions && suggestions.length > 0 && (
           <ul className="suggestions-list">
+            {inputFocused && (
+              <li
+                className="suggestion-item use-location-item"
+                onClick={() => {
+                  setInputFocused(false);
+                  setShowSuggestions(false);
+                  getCurrentLocation();
+                }}
+              >
+                <span className="suggestion-name">
+                  📍 Use my current location
+                </span>
+              </li>
+            )}
             {suggestions.map((s, idx) => (
               <li
                 key={`${s.lat}-${s.lon}-${idx}`}
                 className="suggestion-item"
-                onClick={() => fetchWeatherByCoords(s)}
+                onClick={() => {
+                  setInputFocused(false);
+                  fetchWeatherByCoords(s);
+                }}
               >
                 <span className="suggestion-name">{s.name}</span>
                 <span className="suggestion-meta">
@@ -242,6 +350,20 @@ function HomePage() {
 
         {showHistory && !showSuggestions && searchHistory.length > 0 && (
           <ul className="suggestions-list history-list">
+            {inputFocused && (
+              <li
+                className="suggestion-item use-location-item"
+                onClick={() => {
+                  setInputFocused(false);
+                  setShowHistory(false);
+                  getCurrentLocation();
+                }}
+              >
+                <span className="suggestion-name">
+                  📍 Use my current location
+                </span>
+              </li>
+            )}
             <li className="history-header">
               <span>Recent searches</span>
               <button
@@ -260,11 +382,15 @@ function HomePage() {
                 key={`${h.city}-${h.country}-${idx}`}
                 className="suggestion-item history-item"
                 onClick={() => {
+                  setInputFocused(false);
                   setShowHistory(false);
-                  const query = [h.city, h.state, h.country]
-                    .filter(Boolean)
-                    .join(", ");
-                  textSearch(query);
+                    fetchWeatherByCoords({
+                      lat: h.lat,
+                      lon: h.lon,
+                      name: h.city,
+                      state: h.state,
+                      country: h.country,
+                    });
                 }}
               >
                 <span className="suggestion-name">🕐 {h.city}</span>
@@ -273,6 +399,23 @@ function HomePage() {
                 </span>
               </li>
             ))}
+          </ul>
+        )}
+
+        {/* Show location option even when no suggestions or history */}
+        {inputFocused && !showSuggestions && !showHistory && (
+          <ul className="suggestions-list">
+            <li
+              className="suggestion-item use-location-item"
+              onClick={() => {
+                setInputFocused(false);
+                getCurrentLocation();
+              }}
+            >
+              <span className="suggestion-name">
+                📍 Use my current location
+              </span>
+            </li>
           </ul>
         )}
       </div>

@@ -3,15 +3,11 @@ import { toLocalTime } from "../utils/localTime.js";
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
-/**
- * Create a multi-turn chat session seeded with the current weather data.
- * The model will use this context for every follow-up question.
- */
+// Create a multi-turn chat session seeded with the current weather data.
 export const createWeatherChat = (city, weatherData) => {
-  // Compute the city's current local time using the existing utility
   const localTime = toLocalTime(Date.now(), weatherData.timeSecs * 1000);
 
-  // Only pass the fields the model actually needs — keeps the prompt small & fast
+  // Only pass the necessary info
   const context = {
     localTime,
     timeZone: weatherData.timeZone,
@@ -54,9 +50,7 @@ export const createWeatherChat = (city, weatherData) => {
   return chat;
 };
 
-/**
- * Send a message in an existing chat session and return the model's reply.
- */
+// Send a message back to the user
 export const sendChatMessage = async (chat, userMessage) => {
   try {
     const response = await chat.sendMessage({ message: userMessage });

@@ -234,3 +234,17 @@
   background: rgba(255, 107, 107, 0.12);
   opacity: 0.9;
 }
+
+.use-location-item {
+  border-bottom: 1px solid var(--border-glass) !important;
+}
+
+.use-location-item .suggestion-name {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--accent-secondary, #00d2ff);
+}
+
+.use-location-item:hover .suggestion-name {
+  color: var(--text-primary);
+}
