@@ -22,7 +22,7 @@ app.use("/api/geo", geoRoutes);
 app.use("/api/chat", chatRoutes);
 
 app.use((err, req, res, next) => {
-    console.err(err.stack);
+    console.error(err.stack);
     res.status(500).json({error: "Internal Server Error"})
 });
 

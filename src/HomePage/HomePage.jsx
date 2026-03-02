@@ -172,7 +172,6 @@ function HomePage() {
         country,
       );
       setPrevBgUrl(getBackground(weather?.icon));
-      // Wait for fade-out to complete before showing new data
       await new Promise((r) => setTimeout(r, 400));
       setWeather(weatherData);
     } catch (err) {
@@ -210,11 +209,12 @@ function HomePage() {
         state,
         country,
       );
+      
       setPrevBgUrl(getBackground(weather?.icon));
       await new Promise((r) => setTimeout(r, 400));
       setWeather(weatherData);
       setLocInput("");
-      inputRef.current?.blur();
+      inputRef.current?.blur(); //mobile keyboard
       setShowHistory(false);
     } catch (err) {
       setError(err.message);
