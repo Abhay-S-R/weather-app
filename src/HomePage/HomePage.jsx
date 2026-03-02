@@ -5,14 +5,11 @@ import ChatPanel from "../components/ChatPanel";
 import { buildWeatherData } from "../utils/buildWeatherData.js";
 import { getBackground } from "../utils/getBackground.js";
 
-const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
-
 //All API responses are in seconds
 
 //WeatherAPI
 const fetchWeatherData = async (lat, lon, name, state, country) => {
-  const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
-  const weatherResponse = await fetch(weatherUrl);
+  const weatherResponse = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
   if (!weatherResponse.ok) {
     throw new Error("Failed to fetch weather data");
   }
@@ -22,16 +19,16 @@ const fetchWeatherData = async (lat, lon, name, state, country) => {
 
 //GeoCoding API - direct
 const fetchGeoData = async (query, limit = 1) => {
-  const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=${limit}&appid=${API_KEY}`;
-  const geoResponse = await fetch(geoUrl);
+  const geoResponse = await fetch(
+    `/api/geo/direct?q=${encodeURIComponent(query)}&limit=${limit}`,
+  );
   const geoData = await geoResponse.json();
   return { geoResponse, geoData };
 };
 
 //GeoCoding API - reverse
 const fetchReverseGeoData = async (lat, lon) => {
-  const geoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
-  const geoResponse = await fetch(geoUrl);
+  const geoResponse = await fetch(`/api/geo/reverse?lat=${lat}&lon=${lon}`);
   const geoData = await geoResponse.json();
   return { geoResponse, geoData };
 };
@@ -108,9 +105,7 @@ function HomePage() {
 
     const getIpData = async () => {
       try {
-        const ipData = await fetch("https://get.geojs.io/v1/ip/geo.json").then(
-          (r) => r.json(),
-        );
+        const ipData = await fetch("/api/geo/ip").then((r) => r.json());
         if (cancelled) return;
 
         const weatherData = await fetchWeatherData(
@@ -209,7 +204,7 @@ function HomePage() {
         state,
         country,
       );
-      
+
       setPrevBgUrl(getBackground(weather?.icon));
       await new Promise((r) => setTimeout(r, 400));
       setWeather(weatherData);

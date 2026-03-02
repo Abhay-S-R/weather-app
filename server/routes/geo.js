@@ -62,7 +62,7 @@ router.get("/ip", async (req, res, next) => {
     }
 
     let url;
-    if (clientIp === "::1" || clientIp === "127.0.0.1") {
+    if (clientIp === "::1" || clientIp.includes("127.0.0.1")) {
       url = "https://get.geojs.io/v1/ip/geo.json";
     } else {
       url = `https://get.geojs.io/v1/ip/geo/${clientIp}.json`;
