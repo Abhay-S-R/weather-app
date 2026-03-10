@@ -3,6 +3,11 @@ const router = express.Router();
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 
+if (!API_KEY) {
+  console.error("FATAL: OPENWEATHER_API_KEY is not set");
+  process.exit(1);
+}
+
 router.get("/direct", async (req, res) => {
   const { q, limit = 1 } = req.query;
 
@@ -41,7 +46,7 @@ router.get("/reverse", async (req, res) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      return res.status(502).json({ error: "Failed to fetch geodata" });
+      return res.status(502).json({ error: "Failed to fetch geo data" });
     }
 
     const data = await response.json();
