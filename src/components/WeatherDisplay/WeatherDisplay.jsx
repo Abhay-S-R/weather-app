@@ -52,7 +52,7 @@ function WeatherDisplay({ weather }) {
   const iconUrl = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
 
   return (
-    <div className="weather-display">
+    <div className="weather-display" role="region" aria-label="Weather information">
       <h2 className="city-name">
         {weather.city}
         {weather.state && `, ${weather.state}`}, {weather.country}
@@ -72,12 +72,16 @@ function WeatherDisplay({ weather }) {
         <button
           className="unit-toggle-btn"
           onClick={() => setUseFahrenheit((prev) => !prev)}
+          aria-pressed={useFahrenheit}
+          aria-label={useFahrenheit ? "Switch to Celsius" : "Switch to Fahrenheit"}
         >
           Switch to {useFahrenheit ? "°C" : "°F"}
         </button>
         <button
           className="unit-toggle-btn"
           onClick={() => setUse12Hour((prev) => !prev)}
+          aria-pressed={use12Hour}
+          aria-label={use12Hour ? "Switch to 24-hour time" : "Switch to 12-hour time"}
         >
           Switch to {use12Hour ? "24h" : "12h"}
         </button>
@@ -85,7 +89,7 @@ function WeatherDisplay({ weather }) {
 
       <div className="weather-details-grid">
         <div className="detail-item">
-          <span className="detail-icon">🌡️</span>
+          <span className="detail-icon" aria-hidden="true">🌡️</span>
           <div className="detail-content">
             <span className="detail-label">Feels Like</span>
             <span className="detail-value">
@@ -96,7 +100,7 @@ function WeatherDisplay({ weather }) {
         </div>
 
         <div className="detail-item">
-          <span className="detail-icon">💧</span>
+          <span className="detail-icon" aria-hidden="true">💧</span>
           <div className="detail-content">
             <span className="detail-label">Humidity</span>
             <span className="detail-value">{weather.humidity}%</span>
@@ -104,7 +108,7 @@ function WeatherDisplay({ weather }) {
         </div>
 
         <div className="detail-item">
-          <span className="detail-icon">🌍</span>
+          <span className="detail-icon" aria-hidden="true">🌍</span>
           <div className="detail-content">
             <span className="detail-label">Time Zone</span>
             <span className="detail-value">{weather.timeZone}</span>
@@ -112,7 +116,7 @@ function WeatherDisplay({ weather }) {
         </div>
 
         <div className="detail-item">
-          <span className="detail-icon">🕐</span>
+          <span className="detail-icon" aria-hidden="true">🕐</span>
           <div className="detail-content">
             <span className="detail-label">Local Time</span>
             <span className="detail-value">{displayTime(localTime)}</span>
@@ -120,7 +124,7 @@ function WeatherDisplay({ weather }) {
         </div>
 
         <div className="detail-item">
-          <span className="detail-icon">🌅</span>
+          <span className="detail-icon" aria-hidden="true">🌅</span>
           <div className="detail-content">
             <span className="detail-label">Sunrise</span>
             <span className="detail-value">{displayTime(weather.sunrise)}</span>
@@ -128,14 +132,14 @@ function WeatherDisplay({ weather }) {
         </div>
 
         <div className="detail-item">
-          <span className="detail-icon">🌇</span>
+          <span className="detail-icon" aria-hidden="true">🌇</span>
           <div className="detail-content">
             <span className="detail-label">Sunset</span>
             <span className="detail-value">{displayTime(weather.sunset)}</span>
           </div>
         </div>
         <div className="detail-item visibility-item">
-          <span className="detail-icon">👁️</span>
+          <span className="detail-icon" aria-hidden="true">👁️</span>
           <div className="detail-content">
             <span className="detail-label">Visibility</span>
             <span className="detail-value">
@@ -149,7 +153,7 @@ function WeatherDisplay({ weather }) {
         </div>
 
         <div className="detail-item">
-          <span className="detail-icon">☁️</span>
+          <span className="detail-icon" aria-hidden="true">☁️</span>
           <div className="detail-content">
             <span className="detail-label">Cloudiness</span>
             <span className="detail-value">{weather.cloudiness}%</span>
@@ -157,7 +161,7 @@ function WeatherDisplay({ weather }) {
         </div>
 
         <div className="detail-item">
-          <span className="detail-icon">🔻</span>
+          <span className="detail-icon" aria-hidden="true">🔻</span>
           <div className="detail-content">
             <span className="detail-label">Pressure</span>
             <span className="detail-value">{weather.pressure} hPa</span>
@@ -168,7 +172,7 @@ function WeatherDisplay({ weather }) {
       {/* Wind widget */}
       <div className="wind-widget">
         <div className="wind-header">
-          <span className="detail-icon">💨</span>
+          <span className="detail-icon" aria-hidden="true">💨</span>
           <span className="wind-title">Wind</span>
         </div>
 
@@ -178,6 +182,8 @@ function WeatherDisplay({ weather }) {
               className="wind-arrow"
               style={{ transform: `rotate(${weather.windDeg}deg)` }}
               title={`Wind direction: ${weather.windDeg}°`}
+              role="img"
+              aria-label={`Wind direction: ${weather.windDeg} degrees`}
             >
               ↑
             </div>
@@ -208,6 +214,8 @@ function WeatherDisplay({ weather }) {
               <button
                 className="wind-toggle-btn"
                 onClick={() => setShowGust((prev) => !prev)}
+                aria-pressed={showGust}
+                aria-label={showGust ? "Show wind speed" : "Show wind gust"}
               >
                 {showGust ? "← Speed" : "Gust →"}
               </button>

@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="footer-bottom">
         <p>&copy; {currentYear} Havāmāna. All rights reserved.</p>
         <p>Weather data powered by OpenWeather API</p>
-        <p>Made with 💖 by Abhay</p>
+        <p aria-label="Made with love by Abhay">Made with <span aria-hidden="true">💖</span> by Abhay</p>
       </div>
     </footer>
   );

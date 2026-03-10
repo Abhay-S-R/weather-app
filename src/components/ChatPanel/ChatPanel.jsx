@@ -143,27 +143,29 @@ function ChatPanel({ weather }) {
         className={`chat-fab ${isOpen ? "active" : ""}`}
         onClick={handleFabClick}
         title="Weather Assistant"
+        aria-label={isOpen ? "Close weather assistant" : "Open weather assistant"}
+        aria-expanded={isOpen}
       >
-        <span className="chat-fab-icon">{isOpen ? "✕" : "💬"}</span>
-        <span className="chat-fab-pulse" />
+        <span className="chat-fab-icon" aria-hidden="true">{isOpen ? "✕" : "💬"}</span>
+        <span className="chat-fab-pulse" aria-hidden="true" />
       </button>
 
       {/* Chat Panel */}
       {isOpen && (
-        <div className="chat-panel" ref={panelRef}>
+        <div className="chat-panel" ref={panelRef} role="dialog" aria-label="Weather assistant chat">
           <div className="chat-panel-header">
-            <span className="chat-header-icon">🤖</span>
+            <span className="chat-header-icon" aria-hidden="true">🤖</span>
             <div className="chat-header-text">
               <span className="chat-header-title">Weather Assistant</span>
               <span className="chat-header-subtitle">{weather.city}</span>
             </div>
           </div>
 
-          <div className="chat-messages">
+          <div className="chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
             {messages.map((msg, idx) => (
               <div key={idx} className={`chat-msg chat-msg-${msg.role}`}>
                 {msg.role === "assistant" && (
-                  <span className="chat-avatar">🤖</span>
+                  <span className="chat-avatar" aria-hidden="true">🤖</span>
                 )}
                 <div className="chat-bubble">
                   <p>{msg.text}</p>
@@ -173,11 +175,11 @@ function ChatPanel({ weather }) {
 
             {isLoading && (
               <div className="chat-msg chat-msg-assistant">
-                <span className="chat-avatar">🤖</span>
-                <div className="chat-bubble chat-typing">
-                  <span className="dot" />
-                  <span className="dot" />
-                  <span className="dot" />
+                <span className="chat-avatar" aria-hidden="true">🤖</span>
+                <div className="chat-bubble chat-typing" role="status" aria-label="Assistant is typing">
+                  <span className="dot" aria-hidden="true" />
+                  <span className="dot" aria-hidden="true" />
+                  <span className="dot" aria-hidden="true" />
                 </div>
               </div>
             )}
@@ -209,13 +211,15 @@ function ChatPanel({ weather }) {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
+              aria-label="Ask about the weather"
             />
             <button
               className="chat-send-btn"
               onClick={() => handleSend()}
               disabled={isLoading || !input.trim()}
+              aria-label="Send message"
             >
-              ➤
+              <span aria-hidden="true">➤</span>
             </button>
           </div>
         </div>
