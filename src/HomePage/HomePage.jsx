@@ -8,8 +8,10 @@ import { getBackground } from "../utils/getBackground.js";
 //All API responses are in seconds
 
 //WeatherAPI
-const fetchWeatherData = async (lat, lon, name, state, country) => {
-  const weatherResponse = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
+const fetchWeatherData = async (lat, lon, name, state, country, signal) => {
+  const weatherResponse = await fetch(`/api/weather?lat=${lat}&lon=${lon}`, {
+    signal: signal,
+  });
   if (!weatherResponse.ok) {
     throw new Error("Failed to fetch weather data");
   }
@@ -18,9 +20,10 @@ const fetchWeatherData = async (lat, lon, name, state, country) => {
 };
 
 //GeoCoding API - direct
-const fetchGeoData = async (query, limit = 1) => {
+const fetchGeoData = async (query, limit = 1, signal) => {
   const geoResponse = await fetch(
     `/api/geo/direct?q=${encodeURIComponent(query)}&limit=${limit}`,
+    { signal: signal },
   );
   const geoData = await geoResponse.json();
   return { geoResponse, geoData };
@@ -31,6 +34,16 @@ const fetchReverseGeoData = async (lat, lon) => {
   const geoResponse = await fetch(`/api/geo/reverse?lat=${lat}&lon=${lon}`);
   const geoData = await geoResponse.json();
   return { geoResponse, geoData };
+};
+
+const preloadImg = (src) => {
+  return new Promise((resolve) => {
+    if (!src) return resolve();
+    const img = new Image();
+    img.src = src;
+    img.onload = resolve;
+    img.onerror = resolve;
+  });
 };
 
 function HomePage() {
@@ -45,8 +58,8 @@ function HomePage() {
   const [prevBgUrl, setPrevBgUrl] = useState(null);
 
   const dropdownRef = useRef(null);
-  const debounceRef = useRef(null);
   const inputRef = useRef(null);
+  const controllerRef = useRef(null);
 
   const [searchHistory, setSearchHistory] = useState(() => {
     const saved = localStorage.getItem("weather-history");
@@ -79,12 +92,12 @@ function HomePage() {
     // User is typing 3+ chars — hide history, show suggestions
     setShowHistory(false);
 
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
+    //The debouncing part
+    const timerId = setTimeout(() => {
       fetchSuggestions(locInput);
     }, 300);
 
-    return () => clearTimeout(debounceRef.current);
+    return () => clearTimeout(timerId);
   }, [locInput]);
 
   // Click outside to dismiss
@@ -101,12 +114,13 @@ function HomePage() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     const getIpData = async () => {
       try {
-        const ipData = await fetch("/api/geo/ip").then((r) => r.json());
-        if (cancelled) return;
+        const ipData = await fetch("/api/geo/ip", {
+          signal: controller.signal,
+        }).then((res) => res.json());
 
         const weatherData = await fetchWeatherData(
           parseFloat(ipData.latitude),
@@ -114,23 +128,32 @@ function HomePage() {
           ipData.city,
           ipData.region,
           ipData.country_code,
+          controller.signal,
         );
-        if (!cancelled) setWeather(weatherData);
+        setWeather(weatherData);
       } catch (err) {
-        console.error("Failed to fetch IP data", err);
+        if (err.name !== "AbortError") {
+          console.error("Failed to fetch IP data", err);
+        }
       }
     };
 
     getIpData();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, []);
 
+  //Suggestions to be shown in the drop-down
   const fetchSuggestions = async (query) => {
     try {
-      const { geoData } = await fetchGeoData(query, 5);
+      //Abort previous request
+      controllerRef.current?.abort();
+
+      const controller = new AbortController();
+      controllerRef.current = controller;
+      const { geoData } = await fetchGeoData(query, 5, controller.signal);
 
       if (geoData.length > 0) {
         setSuggestions(geoData);
@@ -140,9 +163,12 @@ function HomePage() {
         setSuggestions([]);
         setShowSuggestions(false);
       }
-    } catch {
-      setSuggestions([]);
-      setShowSuggestions(false);
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        console.error("Failed to fetch suggestions", err);
+      }
     }
   };
 
@@ -166,8 +192,11 @@ function HomePage() {
         state,
         country,
       );
+
+      const newBgUrl = getBackground(weatherData.icon);
+      await preloadImg(newBgUrl);
+
       setPrevBgUrl(getBackground(weather?.icon));
-      await new Promise((r) => setTimeout(r, 400));
       setWeather(weatherData);
     } catch (err) {
       setError(err.message);
@@ -205,8 +234,10 @@ function HomePage() {
         country,
       );
 
+      const newBgUrl = getBackground(weatherData.icon);
+      await preloadImg(newBgUrl);
+
       setPrevBgUrl(getBackground(weather?.icon));
-      await new Promise((r) => setTimeout(r, 400));
       setWeather(weatherData);
       setLocInput("");
       inputRef.current?.blur(); //mobile keyboard
@@ -247,6 +278,10 @@ function HomePage() {
             state,
             country,
           );
+          const newBgUrl = getBackground(weatherData.icon);
+          await preloadImg(newBgUrl);
+
+          setPrevBgUrl(getBackground(weather?.icon));
           setWeather(weatherData);
         } catch (err) {
           setError(err.message);
