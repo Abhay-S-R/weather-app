@@ -85,6 +85,15 @@
   padding-left: 1.4rem;
 }
 
+.suggestion-item.selected {
+  background: rgba(108, 99, 255, 0.18);
+  padding-left: 1.4rem;
+}
+
+.suggestion-item.selected.use-location-item .suggestion-name {
+  color: var(--text-primary);
+}
+
 .suggestion-item + .suggestion-item {
   border-top: 1px solid var(--border-glass);
 }

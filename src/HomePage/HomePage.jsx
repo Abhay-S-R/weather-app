@@ -56,10 +56,12 @@ function HomePage() {
   const [inputFocused, setInputFocused] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const [prevBgUrl, setPrevBgUrl] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
   const controllerRef = useRef(null);
+  const debounceRef = useRef(null);
 
   const [searchHistory, setSearchHistory] = useState(() => {
     const saved = localStorage.getItem("weather-history");
@@ -92,12 +94,14 @@ function HomePage() {
     // User is typing 3+ chars — hide history, show suggestions
     setShowHistory(false);
 
+    //Clear previous timer
+    clearTimeout(debounceRef.current);
     //The debouncing part
-    const timerId = setTimeout(() => {
+    debounceRef.current = setTimeout(() => {
       fetchSuggestions(locInput);
     }, 300);
 
-    return () => clearTimeout(timerId);
+    return () => clearTimeout(debounceRef.current);
   }, [locInput]);
 
   // Click outside to dismiss
@@ -113,6 +117,7 @@ function HomePage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // IP based search
   useEffect(() => {
     const controller = new AbortController();
 
@@ -159,6 +164,7 @@ function HomePage() {
         setSuggestions(geoData);
         setShowSuggestions(true);
         setShowHistory(false);
+        setSelectedIndex(-1);
       } else {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -219,6 +225,8 @@ function HomePage() {
     setTransitioning(true);
     setShowSuggestions(false);
     setSuggestions([]);
+    clearTimeout(debounceRef.current);
+    controllerRef.current?.abort();
 
     try {
       const { geoResponse, geoData } = await fetchGeoData(city);
@@ -251,7 +259,7 @@ function HomePage() {
     }
   };
 
-  //IP based search
+  //Current-location based search
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser");
@@ -297,6 +305,49 @@ function HomePage() {
     );
   };
 
+  //Keyboard Nav for Input
+  const keyboardNav = (e) => {
+    const activeList = showSuggestions
+      ? suggestions
+      : showHistory
+        ? searchHistory
+        : [];
+
+    //Since we ahve "Use my crrrent location maxIndex will be +1"
+    const maxIndex = activeList.length;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev < maxIndex ? prev + 1 : prev));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev > -1 ? prev - 1 : -1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      setInputFocused(false);
+
+      if (selectedIndex === 0) {
+        setShowSuggestions(false);
+        setShowHistory(false);
+        getCurrentLocation();
+      } else if (selectedIndex > 0 && activeList.length > 0) {
+        const rawItem =
+          activeList === searchHistory
+            ? [...searchHistory].reverse()[selectedIndex - 1]
+            : activeList[selectedIndex - 1];
+
+        const selectedItem =
+          activeList === searchHistory
+            ? { lat: rawItem.lat, lon: rawItem.lon, name: rawItem.city, state: rawItem.state, country: rawItem.country }
+            : rawItem;
+
+        fetchWeatherByCoords(selectedItem);
+      } else {
+        textSearch(locInput);
+      }
+    }
+  };
+
   const bgUrl = getBackground(weather?.icon);
 
   return (
@@ -328,18 +379,17 @@ function HomePage() {
             value={locInput}
             onChange={(e) => {
               setLocInput(e.target.value);
+              setSelectedIndex(-1);
               if (e.target.value.length > 0) {
                 setShowHistory(false);
               }
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                setInputFocused(false);
-                textSearch(locInput);
-              }
+              keyboardNav(e);
             }}
             onFocus={() => {
               setInputFocused(true);
+              setSelectedIndex(-1);
               if (locInput.length === 0 && searchHistory.length > 0) {
                 setShowHistory(true);
                 setShowSuggestions(false);
@@ -365,7 +415,7 @@ function HomePage() {
           <ul className="suggestions-list">
             {inputFocused && (
               <li
-                className="suggestion-item use-location-item"
+                className={`suggestion-item use-location-item ${selectedIndex === 0 ? "selected" : ""}`}
                 onClick={() => {
                   setInputFocused(false);
                   setShowSuggestions(false);
@@ -380,7 +430,7 @@ function HomePage() {
             {suggestions.map((s, idx) => (
               <li
                 key={`${s.lat}-${s.lon}-${idx}`}
-                className="suggestion-item"
+                className={`suggestion-item ${selectedIndex === idx + 1 ? "selected" : ""}`}
                 onClick={() => {
                   setInputFocused(false);
                   fetchWeatherByCoords(s);
@@ -399,7 +449,7 @@ function HomePage() {
           <ul className="suggestions-list history-list">
             {inputFocused && (
               <li
-                className="suggestion-item use-location-item"
+                className={`suggestion-item use-location-item ${selectedIndex === 0 ? "selected" : ""}`}
                 onClick={() => {
                   setInputFocused(false);
                   setShowHistory(false);
@@ -427,7 +477,7 @@ function HomePage() {
             {[...searchHistory].reverse().map((h, idx) => (
               <li
                 key={`${h.city}-${h.country}-${idx}`}
-                className="suggestion-item history-item"
+                className={`suggestion-item history-item ${selectedIndex === idx + 1 ? "selected" : ""}`}
                 onClick={() => {
                   setInputFocused(false);
                   setShowHistory(false);
@@ -453,7 +503,7 @@ function HomePage() {
         {inputFocused && !showSuggestions && !showHistory && (
           <ul className="suggestions-list">
             <li
-              className="suggestion-item use-location-item"
+              className={`suggestion-item use-location-item ${selectedIndex === 0 ? "selected" : ""}`}
               onClick={() => {
                 setInputFocused(false);
                 getCurrentLocation();
