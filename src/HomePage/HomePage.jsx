@@ -143,6 +143,9 @@ function HomePage() {
               setSelectedIndex(-1);
               if (e.target.value.length > 0) {
                 setShowHistory(false);
+              } else if (searchHistory.length > 0) {
+                setShowHistory(true);
+                setShowSuggestions(false);
               }
             }}
             onKeyDown={(e) => {

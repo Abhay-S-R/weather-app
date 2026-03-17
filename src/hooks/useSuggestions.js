@@ -19,6 +19,7 @@ function useSuggestions() {
     if (locInput.length < 3) {
       setSuggestions([]);
       setShowSuggestions(false);
+      controllerRef.current?.abort();
       return;
     }
     // User is typing 3+ chars — hide history, show suggestions
