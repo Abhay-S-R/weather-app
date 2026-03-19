@@ -32,8 +32,10 @@ export const fetchGeoData = async (query, limit = 1, signal) => {
 };
 
 //GeoCoding API - reverse
-export const fetchReverseGeoData = async (lat, lon) => {
-  const geoResponse = await fetch(`/api/geo/reverse?lat=${lat}&lon=${lon}`);
+export const fetchReverseGeoData = async (lat, lon, signal) => {
+  const geoResponse = await fetch(`/api/geo/reverse?lat=${lat}&lon=${lon}`, {
+    signal: signal,
+  });
   const geoData = await geoResponse.json();
   return { geoResponse, geoData };
 };

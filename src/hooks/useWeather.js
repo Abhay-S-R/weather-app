@@ -1,6 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { preloadImg } from "../utils/preLoadImg";
-import { fetchWeatherData, fetchGeoData, fetchReverseGeoData } from "../services/weatherApi";
+import {
+  fetchWeatherData,
+  fetchGeoData,
+  fetchReverseGeoData,
+} from "../services/weatherApi";
 import { getBackground } from "../utils/getBackground";
 
 function useWeather() {
@@ -9,6 +13,8 @@ function useWeather() {
   const [error, setError] = useState(null);
   const [transitioning, setTransitioning] = useState(false);
   const [prevBgUrl, setPrevBgUrl] = useState(null);
+
+  const weatherControllerRef = useRef(null);
 
   // IP based search
   useEffect(() => {
@@ -43,10 +49,21 @@ function useWeather() {
     };
   }, []);
 
+  // Abort any pending weather request on unmount
+  useEffect(() => {
+    return () => {
+      weatherControllerRef.current?.abort();
+    };
+  }, []);
+
   const searchByCoords = async (lat, lon, name, state, country) => {
     setError(null);
     setLoading(true);
     setTransitioning(true);
+
+    weatherControllerRef.current?.abort();
+    const controller = new AbortController();
+    weatherControllerRef.current = controller;
 
     try {
       const weatherData = await fetchWeatherData(
@@ -55,6 +72,7 @@ function useWeather() {
         name,
         state,
         country,
+        controller.signal,
       );
 
       const newBgUrl = getBackground(weatherData.icon);
@@ -63,11 +81,17 @@ function useWeather() {
       setPrevBgUrl(getBackground(weather?.icon));
       setWeather(weatherData);
     } catch (err) {
-      setError(err.message);
-      console.error("error: ", err);
+      if (err.name !== "AbortError") {
+        setError(err.message);
+        console.error("error: ", err);
+      }
     } finally {
-      setLoading(false);
-      setTimeout(() => setTransitioning(false), 400);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+        setTimeout(() => setTransitioning(false), 400);
+      }
+      if (weatherControllerRef.current === controller)
+        weatherControllerRef.current = null;
     }
   };
 
@@ -81,8 +105,16 @@ function useWeather() {
     setLoading(true);
     setTransitioning(true);
 
+    weatherControllerRef.current?.abort();
+    const controller = new AbortController();
+    weatherControllerRef.current = controller;
+
     try {
-      const { geoResponse, geoData } = await fetchGeoData(city);
+      const { geoResponse, geoData } = await fetchGeoData(
+        city,
+        1,
+        controller.signal,
+      );
       if (!geoResponse.ok) throw new Error("Failed to fetch geo data");
       if (geoData.length === 0) throw new Error("City not found");
 
@@ -93,6 +125,7 @@ function useWeather() {
         name,
         state,
         country,
+        controller.signal,
       );
 
       const newBgUrl = getBackground(weatherData.icon);
@@ -101,11 +134,17 @@ function useWeather() {
       setPrevBgUrl(getBackground(weather?.icon));
       setWeather(weatherData);
     } catch (err) {
-      setError(err.message);
-      console.error("error: ", err);
+      if (err.name !== "AbortError") {
+        setError(err.message);
+        console.error("error: ", err);
+      }
     } finally {
-      setLoading(false);
-      setTimeout(() => setTransitioning(false), 400);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+        setTimeout(() => setTransitioning(false), 400);
+      }
+      if (weatherControllerRef.current === controller)
+        weatherControllerRef.current = null;
     }
   };
 
@@ -121,10 +160,18 @@ function useWeather() {
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        weatherControllerRef.current?.abort();
+        const controller = new AbortController();
+        weatherControllerRef.current = controller;
+
         try {
           const { latitude, longitude } = position.coords;
           // reverse geocode to get city name from coords
-          const { geoData } = await fetchReverseGeoData(latitude, longitude);
+          const { geoData } = await fetchReverseGeoData(
+            latitude,
+            longitude,
+            controller.signal,
+          );
           if (geoData.length === 0)
             throw new Error("Could not determine your city");
 
@@ -135,6 +182,7 @@ function useWeather() {
             name,
             state,
             country,
+            controller.signal,
           );
           const newBgUrl = getBackground(weatherData.icon);
           await preloadImg(newBgUrl);
@@ -142,9 +190,16 @@ function useWeather() {
           setPrevBgUrl(getBackground(weather?.icon));
           setWeather(weatherData);
         } catch (err) {
-          setError(err.message);
+          if (err.name !== "AbortError") {
+            setError(err.message);
+            console.error(err);
+          }
         } finally {
-          setLoading(false);
+          if (!controller.signal.aborted) {
+            setLoading(false);
+          }
+          if (weatherControllerRef.current === controller)
+            weatherControllerRef.current = null;
         }
       },
       (err) => {
