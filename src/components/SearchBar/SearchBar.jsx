@@ -2,9 +2,20 @@ import "./SearchBar.css";
 import useSuggestions from "../../hooks/useSuggestions.js";
 
 // Private sub-component
-function DropdownItem({ className, isSelected, onClick, icon, name, meta }) {
+function DropdownItem({
+  id,
+  className,
+  isSelected,
+  onClick,
+  icon,
+  name,
+  meta,
+}) {
   return (
     <li
+      id={id}
+      role="option"
+      aria-selected={isSelected}
       className={`suggestion-item ${className || ""} ${isSelected ? "selected" : ""}`}
       onClick={onClick}
     >
@@ -43,6 +54,20 @@ function SearchBar({
     cancelPendingSuggestions,
   } = useSuggestions();
 
+  const isDropdownOpen =
+    (showSuggestions && suggestions.length > 0) ||
+    (showHistory && searchHistory.length > 0) ||
+    (inputFocused && !showSuggestions && !showHistory);
+
+  // Build the active descendant ID for screen readers
+  const getActiveDescendantId = () => {
+    if (selectedIndex < 0) return undefined;
+    if (selectedIndex === 0) return "dropdown-location";
+    if (showSuggestions) return `suggestion-${selectedIndex - 1}`;
+    if (showHistory) return `history-${selectedIndex - 1}`;
+    return undefined;
+  };
+
   // Fetch weather using lat/lon directly (used by suggestion clicks, not directly by user typing in the input box)
   const fetchWeatherByCoords = (suggestion) => {
     clearSuggestionsAndHistory();
@@ -58,6 +83,12 @@ function SearchBar({
 
   //Keyboard Nav for Input
   const keyboardNav = (e) => {
+    if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setShowHistory(false);
+      setInputFocused(false);
+      return;
+    }
     const activeList = showSuggestions
       ? suggestions
       : showHistory
@@ -107,13 +138,18 @@ function SearchBar({
 
   return (
     <div className="search-wrapper" ref={dropdownRef}>
-      <div className="input-container">
+      <div className="input-container" role="combobox" aria-expanded={isDropdownOpen} aria-haspopup="listbox" aria-owns="search-listbox">
         <input
           ref={inputRef}
           type="text"
           className="location-input"
           placeholder="Search for a city..."
           value={locInput}
+          role="searchbox"
+          aria-label="Search for a city"
+          aria-autocomplete="list"
+          aria-controls="search-listbox"
+          aria-activedescendant={getActiveDescendantId()}
           onChange={(e) => {
             setLocInput(e.target.value);
             setSelectedIndex(-1);
@@ -141,6 +177,7 @@ function SearchBar({
         />
         <button
           className="location-enter-btn"
+          aria-label={loading ? "Searching for weather data" : "Search for weather"}
           onClick={() => {
             setInputFocused(false);
             textSearch(locInput);
@@ -152,9 +189,10 @@ function SearchBar({
       </div>
 
       {showSuggestions && suggestions.length > 0 && (
-        <ul className="suggestions-list">
+        <ul id="search-listbox" className="suggestions-list" role="listbox" aria-label="City suggestions">
           {inputFocused && (
             <DropdownItem
+              id="dropdown-location"
               className="use-location-item"
               isSelected={selectedIndex === 0}
               onClick={() => {
@@ -169,6 +207,7 @@ function SearchBar({
           {suggestions.map((s, idx) => (
             <DropdownItem
               key={`${s.lat}-${s.lon}-${idx}`}
+              id={`suggestion-${idx}`}
               isSelected={selectedIndex === idx + 1}
               onClick={() => {
                 setInputFocused(false);
@@ -182,24 +221,26 @@ function SearchBar({
       )}
 
       {showHistory && !showSuggestions && searchHistory.length > 0 && (
-        <ul className="suggestions-list history-list">
+        <ul id="search-listbox" className="suggestions-list history-list" role="listbox" aria-label="Search history">
           {inputFocused && (
             <DropdownItem
+              id="dropdown-location"
               className="use-location-item"
               isSelected={selectedIndex === 0}
               onClick={() => {
                 setInputFocused(false);
-                setShowHistory(false)
+                setShowHistory(false);
                 onGetCurrentLocation();
               }}
               icon="📍"
               name="Use my current location"
             />
           )}
-          <li className="history-header">
+          <li className="history-header" role="presentation">
             <span>Recent searches</span>
             <button
               className="clear-history-btn"
+              aria-label="Clear search history"
               onClick={() => {
                 clearHistory();
                 setShowHistory(false);
@@ -211,6 +252,7 @@ function SearchBar({
           {[...searchHistory].reverse().map((h, idx) => (
             <DropdownItem
               key={`${h.city}-${h.country}-${idx}`}
+              id={`history-${idx}`}
               className="history-item"
               isSelected={selectedIndex === idx + 1}
               onClick={() => {
@@ -234,8 +276,9 @@ function SearchBar({
 
       {/* Show location option even when no suggestions or history */}
       {inputFocused && !showSuggestions && !showHistory && (
-        <ul className="suggestions-list">
+        <ul id="search-listbox" className="suggestions-list" role="listbox" aria-label="Location options">
           <DropdownItem
+            id="dropdown-location"
             className="use-location-item"
             isSelected={selectedIndex === 0}
             onClick={() => {
