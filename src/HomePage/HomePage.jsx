@@ -42,7 +42,7 @@ function HomePage() {
   const { searchHistory, clearHistory } = useSearchHistory(weather);
 
   // Fetch weather using lat/lon directly (used by suggestion clicks, not directly by user typing in the input box)
-  const fetchWeatherByCoords = async (suggestion) => {
+  const fetchWeatherByCoords = (suggestion) => {
     clearSuggestionsAndHistory();
 
     searchByCoords(
@@ -55,7 +55,7 @@ function HomePage() {
   };
 
   // Text-based search
-  const textSearch = async (city) => {
+  const textSearch = (city) => {
     clearSuggestionsAndHistory();
     cancelPendingSuggestions();
 

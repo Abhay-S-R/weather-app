@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { preloadImg } from "../utils/preLoadImg";
+import { preLoadImg } from "../utils/preLoadImg";
 import {
   fetchWeatherData,
   fetchGeoData,
@@ -76,7 +76,7 @@ function useWeather() {
       );
 
       const newBgUrl = getBackground(weatherData.icon);
-      await preloadImg(newBgUrl);
+      await preLoadImg(newBgUrl);
 
       setPrevBgUrl(getBackground(weather?.icon));
       setWeather(weatherData);
@@ -129,7 +129,7 @@ function useWeather() {
       );
 
       const newBgUrl = getBackground(weatherData.icon);
-      await preloadImg(newBgUrl);
+      await preLoadImg(newBgUrl);
 
       setPrevBgUrl(getBackground(weather?.icon));
       setWeather(weatherData);
@@ -185,7 +185,7 @@ function useWeather() {
             controller.signal,
           );
           const newBgUrl = getBackground(weatherData.icon);
-          await preloadImg(newBgUrl);
+          await preLoadImg(newBgUrl);
 
           setPrevBgUrl(getBackground(weather?.icon));
           setWeather(weatherData);
