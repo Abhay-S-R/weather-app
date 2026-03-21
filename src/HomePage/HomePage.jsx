@@ -5,6 +5,7 @@ import ChatPanel from "../components/ChatPanel";
 import useWeather from "../hooks/useWeather.js";
 import useSearchHistory from "../hooks/useSearchHistory.js";
 import ErrorBoundry from "../components/ErrorBoundry";
+import WeatherSkeleton from "../components/WeatherSkeleton";
 
 function HomePage() {
   const {
@@ -59,22 +60,19 @@ function HomePage() {
         </div>
       )}
 
-      {loading && (
-        <div className="loading">
-          <p>Loading weather data...</p>
+      {loading && <WeatherSkeleton />}
+      {!loading && (
+        <div
+          className={`weather-content ${transitioning ? "transitioning" : ""}`}
+        >
+          <ErrorBoundry>
+            <WeatherDisplay weather={weather} />
+          </ErrorBoundry>
+          <ErrorBoundry>
+            <ChatPanel weather={weather} />
+          </ErrorBoundry>
         </div>
       )}
-
-      <div
-        className={`weather-content ${transitioning ? "transitioning" : ""}`}
-      >
-        <ErrorBoundry>
-          <WeatherDisplay weather={weather} />
-        </ErrorBoundry>
-        <ErrorBoundry>
-          <ChatPanel weather={weather} />
-        </ErrorBoundry>
-      </div>
     </>
   );
 }

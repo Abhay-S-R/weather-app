@@ -111,10 +111,18 @@ function SearchBar({
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev < maxIndex ? prev + 1 : prev));
+      if(selectedIndex === maxIndex){
+        setSelectedIndex(0);
+      }else{
+        setSelectedIndex((prev) => (prev < maxIndex ? prev + 1 : prev));
+      }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev > -1 ? prev - 1 : -1));
+      if(selectedIndex === 0){
+        setSelectedIndex(maxIndex);
+      }else{
+        setSelectedIndex((prev) => (prev > -1 ? prev - 1 : -1));
+      }
     } else if (e.key === "Enter") {
       e.preventDefault();
       setInputFocused(false);
