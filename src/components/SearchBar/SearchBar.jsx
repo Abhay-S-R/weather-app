@@ -1,5 +1,6 @@
 import "./SearchBar.css";
 import useSuggestions from "../../hooks/useSuggestions.js";
+import { useEffect, useRef } from "react";
 
 // Private sub-component
 function DropdownItem({
@@ -11,8 +12,18 @@ function DropdownItem({
   name,
   meta,
 }) {
+
+  //Currently of no use as I use only 5 suggestions, but it is a good practice to have it for large lists
+  const itemRef = useRef(null);
+  useEffect(() => {
+    if (isSelected && itemRef.current) {
+      itemRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [isSelected]);
+
   return (
     <li
+      ref={itemRef}
       id={id}
       role="option"
       aria-selected={isSelected}
@@ -138,7 +149,13 @@ function SearchBar({
 
   return (
     <div className="search-wrapper" ref={dropdownRef}>
-      <div className="input-container" role="combobox" aria-expanded={isDropdownOpen} aria-haspopup="listbox" aria-owns="search-listbox">
+      <div
+        className="input-container"
+        role="combobox"
+        aria-expanded={isDropdownOpen}
+        aria-haspopup="listbox"
+        aria-owns="search-listbox"
+      >
         <input
           ref={inputRef}
           type="text"
@@ -177,7 +194,9 @@ function SearchBar({
         />
         <button
           className="location-enter-btn"
-          aria-label={loading ? "Searching for weather data" : "Search for weather"}
+          aria-label={
+            loading ? "Searching for weather data" : "Search for weather"
+          }
           onClick={() => {
             setInputFocused(false);
             textSearch(locInput);
@@ -189,7 +208,12 @@ function SearchBar({
       </div>
 
       {showSuggestions && suggestions.length > 0 && (
-        <ul id="search-listbox" className="suggestions-list" role="listbox" aria-label="City suggestions">
+        <ul
+          id="search-listbox"
+          className="suggestions-list"
+          role="listbox"
+          aria-label="City suggestions"
+        >
           {inputFocused && (
             <DropdownItem
               id="dropdown-location"
@@ -221,7 +245,12 @@ function SearchBar({
       )}
 
       {showHistory && !showSuggestions && searchHistory.length > 0 && (
-        <ul id="search-listbox" className="suggestions-list history-list" role="listbox" aria-label="Search history">
+        <ul
+          id="search-listbox"
+          className="suggestions-list history-list"
+          role="listbox"
+          aria-label="Search history"
+        >
           {inputFocused && (
             <DropdownItem
               id="dropdown-location"
@@ -276,7 +305,12 @@ function SearchBar({
 
       {/* Show location option even when no suggestions or history */}
       {inputFocused && !showSuggestions && !showHistory && (
-        <ul id="search-listbox" className="suggestions-list" role="listbox" aria-label="Location options">
+        <ul
+          id="search-listbox"
+          className="suggestions-list"
+          role="listbox"
+          aria-label="Location options"
+        >
           <DropdownItem
             id="dropdown-location"
             className="use-location-item"

@@ -2,8 +2,13 @@ import { useState, useEffect } from "react";
 
 function useSearchHistory(weather) {
   const [searchHistory, setSearchHistory] = useState(() => {
-    const saved = localStorage.getItem("weather-history");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("weather-history");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      localStorage.removeItem("weather-history");
+      return [];
+    }
   });
 
   useEffect(() => {

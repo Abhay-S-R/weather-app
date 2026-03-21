@@ -4,6 +4,7 @@ import WeatherDisplay from "../components/WeatherDisplay";
 import ChatPanel from "../components/ChatPanel";
 import useWeather from "../hooks/useWeather.js";
 import useSearchHistory from "../hooks/useSearchHistory.js";
+import ErrorBoundry from "../components/ErrorBoundry";
 
 function HomePage() {
   const {
@@ -67,8 +68,12 @@ function HomePage() {
       <div
         className={`weather-content ${transitioning ? "transitioning" : ""}`}
       >
-        <WeatherDisplay weather={weather} />
-        <ChatPanel weather={weather} />
+        <ErrorBoundry>
+          <WeatherDisplay weather={weather} />
+        </ErrorBoundry>
+        <ErrorBoundry>
+          <ChatPanel weather={weather} />
+        </ErrorBoundry>
       </div>
     </>
   );
