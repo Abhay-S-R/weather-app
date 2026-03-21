@@ -1,6 +1,6 @@
 import "./ChatPanel.css";
 import { useState, useEffect, useRef } from "react";
-import { createWeatherChat, sendChatMessage } from "../../lib/gemini";
+import { sendChatMessage } from "../../lib/gemini";
 
 const SUGGESTED_PROMPTS = [
   "🧥 Clothing advice",
@@ -17,7 +17,6 @@ function ChatPanel({ weather }) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasGreeted, setHasGreeted] = useState(false);
 
-  const chatRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const prevCityRef = useRef(null);
@@ -39,7 +38,6 @@ function ChatPanel({ weather }) {
     prevCityRef.current = weather.city;
 
     // Reset state for new city
-    chatRef.current = null;
     setMessages([]);
     setHasGreeted(false);
     setIsOpen(false);
@@ -79,11 +77,10 @@ function ChatPanel({ weather }) {
     setHasGreeted(true);
 
     try {
-      const chat = createWeatherChat(weather.city, weather);
-      chatRef.current = chat;
-
       const greeting = await sendChatMessage(
-        chat,
+        weather.city,
+        weather,
+        [],
         "Give me a quick overview of today's weather and what to expect.",
       );
 
@@ -103,14 +100,14 @@ function ChatPanel({ weather }) {
 
   const handleSend = async (text) => {
     const trimmed = (text || input).trim();
-    if (!trimmed || isLoading || !chatRef.current) return;
+    if (!trimmed || isLoading) return;
 
     setInput("");
     setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
     setIsLoading(true);
 
     try {
-      const reply = await sendChatMessage(chatRef.current, trimmed);
+      const reply = await sendChatMessage(weather.city, weather, messages, trimmed);
       setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
     } catch {
       setMessages((prev) => [

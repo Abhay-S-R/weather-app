@@ -4,7 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import weatherRoutes from "./routes/weather.js";
 import geoRoutes from "./routes/geo.js";
-// import chatRoutes from "./routes/chat.js";
+import chatRoutes from "./routes/chat.js";
 
 const app = express();
 
@@ -18,7 +18,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/weather", weatherRoutes);
 app.use("/api/geo", geoRoutes);
-// app.use("/api/chat", chatRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
