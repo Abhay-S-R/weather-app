@@ -220,6 +220,12 @@
   color: var(--text-primary);
 }
 
+.chat-bubble.error-bubble {
+  background: rgba(255, 75, 75, 0.15) !important;
+  border: 1px solid rgba(255, 75, 75, 0.4) !important;
+  color: #ffb3b3 !important;
+}
+
 .chat-bubble p {
   margin: 0;
   white-space: pre-wrap;

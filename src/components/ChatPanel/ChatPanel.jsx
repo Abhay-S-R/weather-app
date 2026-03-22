@@ -90,7 +90,7 @@ function ChatPanel({ weather }) {
       setMessages([
         {
           role: "assistant",
-          text: "Hi! I'm your weather assistant. Ask me anything about the weather! 🌤️",
+          text: err.message || "Hi! I'm your weather assistant. Ask me anything about the weather! 🌤️",
         },
       ]);
     } finally {
@@ -109,12 +109,12 @@ function ChatPanel({ weather }) {
     try {
       const reply = await sendChatMessage(weather.city, weather, messages, trimmed);
       setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
-    } catch {
+    } catch (err) {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          text: "Sorry, something went wrong. Please try again.",
+          text: err.message || "Sorry, something went wrong. Please try again.",
         },
       ]);
     } finally {
@@ -164,7 +164,7 @@ function ChatPanel({ weather }) {
                 {msg.role === "assistant" && (
                   <span className="chat-avatar" aria-hidden="true">🤖</span>
                 )}
-                <div className="chat-bubble">
+                <div className={`chat-bubble ${msg.text.includes("touch grass") || msg.text.includes("take rest") ? "error-bubble" : ""}`}>
                   <p>{msg.text}</p>
                 </div>
               </div>

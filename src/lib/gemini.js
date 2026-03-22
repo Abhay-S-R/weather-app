@@ -9,13 +9,14 @@ export const sendChatMessage = async (city, weatherData, history, message) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Chat API error: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(errorData.error || `HTTP Error: ${response.status}`);
     }
 
     const data = await response.json();
     return data.reply;
   } catch (error) {
     console.error("Chat fetch error:", error);
-    return "Sorry, I couldn't process that right now. Please try again.";
+    throw error;
   }
 };
