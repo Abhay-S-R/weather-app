@@ -28,15 +28,16 @@ router.get("/", async (req, res) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      return res.status(502).json({ error: "Failed to fetch weather data" });
+      const err = new Error("Failed to fetch weather data");
+      err.status = 502;
+      throw err;
     }
 
     const data = await response.json();
     cacheSet(key, data, TTL);
     res.json(data);
   } catch (err) {
-    console.error("Weather route error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    next(err);
   }
 });
 

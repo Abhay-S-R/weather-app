@@ -89,8 +89,7 @@ router.post("/", strictLimiter, async (req, res) => {
 
     res.json({ reply: response.text });
   } catch (err) {
-    console.error("Chat route error:", err);
-    res.status(500).json({ error: "Failed to get response from Gemini" });
+    next(err);
   }
 });
 

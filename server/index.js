@@ -37,8 +37,14 @@ app.use("/api/geo", geoRoutes);
 app.use("/api/chat", chatRoutes);
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Internal Server Error" });
+  const statusCode = err.status || 500;
+  if (statusCode === 500) {
+    console.error("CRITICAL CRASH:", err.stack);
+  }
+  res.status(statusCode).json({
+    success: false,
+    error: err.message || "Internal Server Error"
+  });
 });
 
 app.listen(3001, () => {

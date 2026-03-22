@@ -9,7 +9,7 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-router.get("/direct", async (req, res) => {
+router.get("/direct", async (req, res, next) => {
   const { q, limit = 1 } = req.query;
 
   if (!q || !q.trim()) {
@@ -27,19 +27,20 @@ router.get("/direct", async (req, res) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      return res.status(502).json({ error: "Failed to fetch geo data" });
+      const err = new Error("Failed to fetch geo data");
+      err.status = 502;
+      throw err;
     }
 
     const data = await response.json();
     cacheSet(key, data, TTL);
     res.json(data);
   } catch (err) {
-    console.error("Geo direct route error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    next(err);
   }
 });
 
-router.get("/reverse", async (req, res) => {
+router.get("/reverse", async (req, res, next) => {
   const { lat, lon } = req.query;
   if (!lat || !lon) {
     return res.status(400).json({ error: "lat and lon are required" });
@@ -62,15 +63,16 @@ router.get("/reverse", async (req, res) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      return res.status(502).json({ error: "Failed to fetch geo data" });
+      const err = new Error("Failed to fetch geo data");
+      err.status = 502;
+      throw err;
     }
 
     const data = await response.json();
     cacheSet(key, data, TTL);
     res.json(data);
   } catch (err) {
-    console.error("Geo reverse route error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    next(err);
   }
 });
 
@@ -98,7 +100,9 @@ router.get("/ip", async (req, res, next) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      return res.status(502).json({ error: "Failed to fetch IP geolocation" });
+      const err = new Error("Failed to fetch IP geolocation");
+      err.status = 502;
+      throw err;
     }
 
     const data = await response.json();
