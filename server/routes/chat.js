@@ -1,13 +1,31 @@
 import express from "express";
 import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
+import { z } from "zod";
+
+const chatObjectSchema = z.object({
+  city: z.string().min(1, "City name is required").max(100),
+  weatherData: z.any(),
+  message: z
+    .string()
+    .min(1, "Message cannot be empty")
+    .max(500, "Message is too long"),
+  history: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        text: z.string(),
+      }),
+    )
+    .optional(),
+});
 
 const router = express.Router();
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const strictLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 2,
+  max: 21,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -60,16 +78,11 @@ function buildSystemInstruction(city, weatherData) {
   ].join("\n");
 }
 
-router.post("/", strictLimiter, async (req, res) => {
-  const { city, weatherData, history, message } = req.body;
-
-  if (!city || !weatherData || !message) {
-    return res
-      .status(400)
-      .json({ error: "city, weatherData, and message are required" });
-  }
-
+router.post("/", strictLimiter, async (req, res, next) => {
   try {
+    const validatedData = chatObjectSchema.parse(req.body);
+    const  {city, weatherData, history, message} = validatedData;
+
     const systemInstruction = buildSystemInstruction(city, weatherData);
 
     // Map frontend message history to Gemini's expected format

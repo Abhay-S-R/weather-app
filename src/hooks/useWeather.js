@@ -22,9 +22,18 @@ function useWeather() {
 
     const getIpData = async () => {
       try {
-        const ipData = await fetch("/api/geo/ip", {
+        const ipResponse = await fetch("/api/geo/ip", {
           signal: controller.signal,
-        }).then((res) => res.json());
+        });
+        const ipData = await ipResponse.json().catch(() => ({}));
+        
+        if (!ipResponse.ok) {
+          if (ipResponse.status === 429) {
+            throw new Error(ipData.error);
+          }
+          console.error(`Backend Error (${ipResponse.status}):`, ipData);
+          throw new Error("Failed to fetch IP data");
+        }
 
         const weatherData = await fetchWeatherData(
           parseFloat(ipData.latitude),
@@ -115,7 +124,7 @@ function useWeather() {
         1,
         controller.signal,
       );
-      if (!geoResponse.ok) throw new Error("Failed to fetch geo data");
+      
       if (geoData.length === 0) throw new Error("City not found");
 
       const { lat, lon, name, state, country } = geoData[0];

@@ -14,10 +14,16 @@ export const fetchWeatherData = async (
   const weatherResponse = await fetch(`/api/weather?lat=${lat}&lon=${lon}`, {
     signal: signal,
   });
+  
+  const data = await weatherResponse.json().catch(() => ({}));
   if (!weatherResponse.ok) {
+    if (weatherResponse.status === 429) {
+      throw new Error(data.error);
+    }
+    console.error(`Backend Error (${weatherResponse.status}):`, data);
     throw new Error("Failed to fetch weather data");
   }
-  const data = await weatherResponse.json();
+
   return buildWeatherData(data, name, state, country);
 };
 
@@ -27,7 +33,16 @@ export const fetchGeoData = async (query, limit = 1, signal) => {
     `/api/geo/direct?q=${encodeURIComponent(query)}&limit=${limit}`,
     { signal: signal },
   );
-  const geoData = await geoResponse.json();
+
+  const geoData = await geoResponse.json().catch(() => ({}));
+  if (!geoResponse.ok) {
+    if (geoResponse.status === 429) {
+      throw new Error(geoData.error);
+    }
+    console.error(`Backend Error (${geoResponse.status}):`, geoData);
+    throw new Error("Failed to fetch geo data");
+  }
+
   return { geoResponse, geoData };
 };
 
@@ -36,6 +51,15 @@ export const fetchReverseGeoData = async (lat, lon, signal) => {
   const geoResponse = await fetch(`/api/geo/reverse?lat=${lat}&lon=${lon}`, {
     signal: signal,
   });
-  const geoData = await geoResponse.json();
+
+  const geoData = await geoResponse.json().catch(() => ({}));
+  if (!geoResponse.ok) {
+    if (geoResponse.status === 429) {
+      throw new Error(geoData.error);
+    }
+    console.error(`Backend Error (${geoResponse.status}):`, geoData);
+    throw new Error("Failed to fetch reverse geo data");
+  }
+
   return { geoResponse, geoData };
 };

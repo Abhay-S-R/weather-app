@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import weatherRoutes from "./routes/weather.js";
 import geoRoutes from "./routes/geo.js";
 import chatRoutes from "./routes/chat.js";
+import { ZodError } from "zod";
 
 const app = express();
 
@@ -18,7 +19,7 @@ app.use(morgan("dev"));
 
 const globalLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 30,
+  max: 31,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -37,13 +38,21 @@ app.use("/api/geo", geoRoutes);
 app.use("/api/chat", chatRoutes);
 
 app.use((err, req, res, next) => {
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      success: false,
+      error: "Validation error",
+      details: err.errors,
+    });
+  }
+
   const statusCode = err.status || 500;
   if (statusCode === 500) {
     console.error("CRITICAL CRASH:", err.stack);
   }
   res.status(statusCode).json({
     success: false,
-    error: err.message || "Internal Server Error"
+    error: err.message || "Internal Server Error",
   });
 });
 

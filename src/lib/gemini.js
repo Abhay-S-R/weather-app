@@ -10,13 +10,31 @@ export const sendChatMessage = async (city, weatherData, history, message) => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP Error: ${response.status}`);
+      
+      // If it's a rate limit error, throw the funny backend message directly to the UI
+      if (response.status === 429) {
+        throw new Error(errorData.error);
+      } else {
+        // For everything else (like 400 validation or 500 crash), log silently and throw generic string
+        console.error(`Backend Error (${response.status}):`, errorData);
+        throw new Error("Sorry, I couldn't process that right now. Please try again.");
+      }
     }
 
     const data = await response.json();
     return data.reply;
   } catch (error) {
-    console.error("Chat fetch error:", error);
-    throw error;
+    // If we threw one of our intended messages above, just rethrow it smoothly
+    if (
+      error.message === "Sorry, I couldn't process that right now. Please try again." ||
+      error.message.includes("touch grass") ||
+      error.message.includes("take rest")
+    ) {
+      throw error;
+    }
+    
+    // Catch generic pure network fail (like internet off)
+    console.error("Chat network error:", error);
+    throw new Error("Sorry, I couldn't process that right now. Please try again.");
   }
 };
