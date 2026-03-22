@@ -1,5 +1,5 @@
 import express from "express";
-import { cacheSet, cacheGet } from "../utils/cache";
+import { cacheSet, cacheGet } from "../utils/cache.js";
 const router = express.Router();
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
@@ -18,10 +18,10 @@ router.get("/direct", async (req, res) => {
 
   try {
     const TTL = 24 * 60 * 60 * 1000;
-    const key = `geo:direct:${q.trim().toLowerCase()}`;
+    const normalizedQ = q.trim().toLowerCase();
+    const key = `geo:direct:${normalizedQ}:${limit}`;
     const cached = cacheGet(key);
     if (cached) return res.json(cached);
-
 
     const url = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q)}&limit=${limit}&appid=${API_KEY}`;
     const response = await fetch(url);
@@ -50,12 +50,13 @@ router.get("/reverse", async (req, res) => {
   }
 
   try {
-    const TTL  = 24 * 60 * 60 * 1000;
+    const TTL = 24 * 60 * 60 * 1000;
 
-    const key = `geo:reverse:${lat}:${lon}`;
+    const latNum = parseFloat(lat).toFixed(3);
+    const lonNum = parseFloat(lon).toFixed(3);
+    const key = `geo:reverse:${latNum}:${lonNum}`;
     const cached = cacheGet(key);
-    if(cached) return res.json(cached); 
-
+    if (cached) return res.json(cached);
 
     const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
     const response = await fetch(url);
@@ -65,7 +66,7 @@ router.get("/reverse", async (req, res) => {
     }
 
     const data = await response.json();
-    cacheSet(key, data, TTL)
+    cacheSet(key, data, TTL);
     res.json(data);
   } catch (err) {
     console.error("Geo reverse route error:", err);
@@ -75,7 +76,7 @@ router.get("/reverse", async (req, res) => {
 
 router.get("/ip", async (req, res, next) => {
   try {
-    const TTL  = 10 * 60 * 60 * 1000;
+    const TTL = 10 * 60 * 60 * 1000;
 
     const clientIp =
       req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
@@ -84,10 +85,9 @@ router.get("/ip", async (req, res, next) => {
       return res.status(400).json({ error: "Unable to determine client IP" });
     }
 
-    const key = clientIp;
+    const key = `geo:ip:${clientIp}`;
     const cached = cacheGet(key);
-    if(cached) return res.json(cached); 
-    
+    if (cached) return res.json(cached);
 
     let url;
     if (clientIp === "::1" || clientIp.includes("127.0.0.1")) {

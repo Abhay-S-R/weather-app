@@ -1,5 +1,5 @@
 import express from "express";
-import { cacheSet, cacheGet } from "../utils/cache";
+import { cacheSet, cacheGet } from "../utils/cache.js";
 
 const router = express.Router();
 
@@ -18,18 +18,17 @@ router.get("/", async (req, res) => {
   }
 
   try {
-    const key = `weather:${lat}:${lon}`;
+    const latNum = parseFloat(lat).toFixed(3);
+    const lonNum = parseFloat(lon).toFixed(3);
+    const key = `weather:${latNum}:${lonNum}`;
     const cached = cacheGet(key);
-    if(cached) return res.json(cached); 
-
+    if (cached) return res.json(cached);
 
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
     const response = await fetch(url);
 
     if (!response.ok) {
-      return res
-        .status(502)
-        .json({ error: "Failed to fetch weather data" });
+      return res.status(502).json({ error: "Failed to fetch weather data" });
     }
 
     const data = await response.json();

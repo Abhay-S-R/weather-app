@@ -1,9 +1,20 @@
 import express from "express";
 import { GoogleGenAI } from "@google/genai";
+import rateLimit from "express-rate-limit";
 
 const router = express.Router();
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+const strictLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 2,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error:
+      "Maybe it's time for my cute little weather assistant to take rest, it wil be back after 1 hour",
+  },
+});
 // Replicate toLocalTime from client utils (everything in ms)
 function toLocalTime(unixTime, timeMilliSecs) {
   const date = new Date(unixTime + timeMilliSecs);
@@ -38,6 +49,7 @@ function buildSystemInstruction(city, weatherData) {
     `Current weather: ${JSON.stringify(context)}`,
     "Temps in °C, wind in m/s, visibility in meters.",
     "Greet the user based on the city's local time (Good morning/afternoon/evening).",
+    "Greet them at the start only, dont greet them in every response.",
     "Keep responses concise (3-5 sentences). Be specific with clothing/activity advice.",
     "Use a warm tone with occasional weather emoji.",
     "Stay on weather topics. Gently steer away if the user prompts for something else.",
@@ -48,11 +60,13 @@ function buildSystemInstruction(city, weatherData) {
   ].join("\n");
 }
 
-router.post("/", async (req, res) => {
+router.post("/", strictLimiter, async (req, res) => {
   const { city, weatherData, history, message } = req.body;
 
   if (!city || !weatherData || !message) {
-    return res.status(400).json({ error: "city, weatherData, and message are required" });
+    return res
+      .status(400)
+      .json({ error: "city, weatherData, and message are required" });
   }
 
   try {
@@ -68,7 +82,7 @@ router.post("/", async (req, res) => {
     contents.push({ role: "user", parts: [{ text: message }] });
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite-preview",
       config: { systemInstruction },
       contents,
     });
