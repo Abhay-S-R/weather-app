@@ -2,7 +2,7 @@ import express from "express";
 import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
-import logger from "../utils/logger";
+import logger from "../utils/logger.js";
 
 const chatObjectSchema = z.object({
   city: z.string().min(1, "City name is required").max(100),
