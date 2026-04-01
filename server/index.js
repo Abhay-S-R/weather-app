@@ -31,6 +31,7 @@ const globalLimiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { trustProxy: false },
   message: {
     error: "You've looked at Weather for a while, it's time to touch grass",
   },

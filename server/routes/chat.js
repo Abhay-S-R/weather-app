@@ -29,6 +29,7 @@ const strictLimiter = rateLimit({
   max: 21,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { trustProxy: false },
   message: {
     error:
       "Maybe it's time for my cute little weather assistant to take rest, it wil be back after 1 hour",
