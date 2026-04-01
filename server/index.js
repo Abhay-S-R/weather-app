@@ -14,7 +14,11 @@ const app = express();
 
 app.set("trust proxy", 1);
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  }),
+);
 app.use(express.json());
 app.use(
   morgan("combined", {
@@ -30,6 +34,14 @@ const globalLimiter = rateLimit({
   message: {
     error: "You've looked at Weather for a while, it's time to touch grass",
   },
+  handler: (req, res, next, options) => {
+    logger.warn("Rate limit exceeded", {
+      method: req.method,
+      ip:req.ip,
+      url: req.originalUrl
+    });
+    res.status(options.statusCode).json(options.message);
+  }
 });
 
 app.use(globalLimiter);
@@ -79,6 +91,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(3001, () => {
-  logger.info("Server running on http://localhost:3001");
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  logger.info(`Server running on http://localhost:${PORT}`);
 });

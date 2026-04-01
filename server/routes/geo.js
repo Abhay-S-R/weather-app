@@ -1,10 +1,11 @@
 import express from "express";
 import { cacheSet, cacheGet } from "../utils/cache.js";
 import { z } from "zod";
+import logger from "../utils/logger.js";
 
 const geoDirectSchema = z.object({
   q: z.string(),
-  l: z.coerce.number().int().optional().default(1),
+  limit: z.coerce.number().int().optional().default(1),
 });
 
 const geoReverseSchema = z.object({
@@ -17,7 +18,7 @@ const router = express.Router();
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 
 if (!API_KEY) {
-  console.error("FATAL: OPENWEATHER_API_KEY is not set");
+  logger.error("FATAL: OPENWEATHER_API_KEY is not set");
   process.exit(1);
 }
 

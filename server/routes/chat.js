@@ -2,6 +2,7 @@ import express from "express";
 import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
+import logger from "../utils/logger";
 
 const chatObjectSchema = z.object({
   city: z.string().min(1, "City name is required").max(100),
@@ -32,6 +33,14 @@ const strictLimiter = rateLimit({
     error:
       "Maybe it's time for my cute little weather assistant to take rest, it wil be back after 1 hour",
   },
+  handler: (req, res, next, options) => {
+    logger.warn("Rate limit exceeded", {
+      method: req.method,
+      ip:req.ip,
+      url: req.originalUrl
+    });
+    res.status(options.statusCode).json(options.message);
+  }
 });
 // Replicate toLocalTime from client utils (everything in ms)
 function toLocalTime(unixTime, timeMilliSecs) {
@@ -86,7 +95,7 @@ router.post("/", strictLimiter, async (req, res, next) => {
     const systemInstruction = buildSystemInstruction(city, weatherData);
 
     // Map frontend message history to Gemini's expected format
-    const contents = (history || []).map((msg) => ({
+    const contents = (history || []).slice(-10).map((msg) => ({
       role: msg.role === "assistant" ? "model" : "user",
       parts: [{ text: msg.text }],
     }));
