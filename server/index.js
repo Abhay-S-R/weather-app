@@ -8,6 +8,7 @@ import weatherRoutes from "./routes/weather.js";
 import geoRoutes from "./routes/geo.js";
 import chatRoutes from "./routes/chat.js";
 import { ZodError } from "zod";
+import logger from "./utils/logger.js";
 
 const app = express();
 
@@ -15,7 +16,11 @@ app.set("trust proxy", 1);
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use(morgan("dev"));
+app.use(
+  morgan("combined", {
+    stream: { write: (message) => logger.info(message.trim()) },
+  }),
+);
 
 const globalLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -39,6 +44,12 @@ app.use("/api/chat", chatRoutes);
 
 app.use((err, req, res, next) => {
   if (err instanceof ZodError) {
+    logger.warn("Validation Error", {
+      method: req.method,
+      url: req.originalUrl,
+      ip: req.ip,
+      issues: err.issues,
+    });
     return res.status(400).json({
       success: false,
       error: "Validation error",
@@ -47,9 +58,21 @@ app.use((err, req, res, next) => {
   }
 
   const statusCode = err.status || 500;
+
+  const logEntry = {
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    statusCode,
+    stack: err.stack,
+  };
+
   if (statusCode === 500) {
-    console.error("CRITICAL CRASH:", err.stack);
+    logger.error(err.message || "Internal server error", logEntry);
+  } else {
+    logger.warn(err.message, logEntry);
   }
+
   res.status(statusCode).json({
     success: false,
     error: err.message || "Internal Server Error",
@@ -57,5 +80,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(3001, () => {
-  console.log("Server running on http://localhost:3001");
+  logger.info("Server running on http://localhost:3001");
 });
