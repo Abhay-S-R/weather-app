@@ -1,5 +1,17 @@
 import express from "express";
 import { cacheSet, cacheGet } from "../utils/cache.js";
+import { z } from "zod";
+
+const geoDirectSchema = z.object({
+  q: z.string(),
+  l: z.coerce.number().int().optional().default(1),
+});
+
+const geoReverseSchema = z.object({
+  lat: z.string(),
+  lon: z.string(),
+});
+
 const router = express.Router();
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
@@ -10,13 +22,10 @@ if (!API_KEY) {
 }
 
 router.get("/direct", async (req, res, next) => {
-  const { q, limit = 1 } = req.query;
-
-  if (!q || !q.trim()) {
-    return res.status(400).json({ error: "q (city name) is required" });
-  }
-
   try {
+    const validatedData = geoDirectSchema.parse(req.query);
+    const { q, limit = 1 } = validatedData;
+
     const TTL = 24 * 60 * 60 * 1000;
     const normalizedQ = q.trim().toLowerCase();
     const key = `geo:direct:${normalizedQ}:${limit}`;
@@ -41,18 +50,11 @@ router.get("/direct", async (req, res, next) => {
 });
 
 router.get("/reverse", async (req, res, next) => {
-  const { lat, lon } = req.query;
-  if (!lat || !lon) {
-    return res.status(400).json({ error: "lat and lon are required" });
-  }
-
-  if (isNaN(lat) || isNaN(lon)) {
-    return res.status(400).json({ error: "lat and lon must be numbers" });
-  }
-
   try {
-    const TTL = 24 * 60 * 60 * 1000;
+    const validatedData = geoReverseSchema.parse(req.query);
+    const { lat, lon } = validatedData;
 
+    const TTL = 24 * 60 * 60 * 1000;
     const latNum = parseFloat(lat).toFixed(3);
     const lonNum = parseFloat(lon).toFixed(3);
     const key = `geo:reverse:${latNum}:${lonNum}`;

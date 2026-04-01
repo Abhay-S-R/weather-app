@@ -42,7 +42,7 @@ app.use((err, req, res, next) => {
     return res.status(400).json({
       success: false,
       error: "Validation error",
-      details: err.errors,
+      details: err.issues,
     });
   }
 

@@ -1,23 +1,22 @@
 import express from "express";
 import { cacheSet, cacheGet } from "../utils/cache.js";
+import { z } from "zod";
+
+const weatherSchema = z.object({
+  lat: z.string(),
+  lon: z.string(),
+});
 
 const router = express.Router();
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 const TTL = 10 * 60 * 1000; //10mins in ms
 
-router.get("/", async (req, res) => {
-  const { lat, lon } = req.query;
-
-  if (!lat || !lon) {
-    return res.status(400).json({ error: "lat and lon are required" });
-  }
-
-  if (isNaN(lat) || isNaN(lon)) {
-    return res.status(400).json({ error: "lat and lon must be numbers" });
-  }
-
+router.get("/", async (req, res, next) => {
   try {
+    const validatedData = weatherSchema.parse(req.query);
+    const { lat, lon } = validatedData;
+
     const latNum = parseFloat(lat).toFixed(3);
     const lonNum = parseFloat(lon).toFixed(3);
     const key = `weather:${latNum}:${lonNum}`;
