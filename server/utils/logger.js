@@ -1,30 +1,45 @@
 import { createLogger, format, transports } from "winston";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const logger = createLogger({
   level: "info",
-  format: format.combine(format.timestamp(), format.json()),
+
+  format: format.combine(
+    format.timestamp(),
+    isProduction ? format.json() : format.simple(),
+  ),
+
   transports: [
-    // Errors only
-    new transports.File({
-      filename: "logs/error.log",
-      level: "error",
-    }),
-
-    //Write everthing(info + warn + error) to a combined file
-    new transports.File({
-      filename: "logs/combined.log",
-    }),
-
-    //Pretty print to terminal during dev
+    // Render captures console logs automatically
     new transports.Console({
-      format: format.combine(
-        format.colorize(),
-        format.printf(({ timestamp, level, message, ...meta }) => {
-          const metaStr = Object.keys(meta).length ? JSON.stringify(meta) : "";
-          return `${timestamp} [${level}]: ${message} ${metaStr}`;
-        }),
-      ),
+      format: isProduction
+        ? format.combine(format.timestamp(), format.json())
+        : format.combine(
+            format.colorize(),
+            format.printf(({ timestamp, level, message, ...meta }) => {
+              const metaStr = Object.keys(meta).length
+                ? JSON.stringify(meta, null, 2)
+                : "";
+
+              return `${timestamp} [${level}]: ${message} ${metaStr}`;
+            }),
+          ),
     }),
+
+    // File logs only in local development
+    ...(!isProduction
+      ? [
+          new transports.File({
+            filename: "logs/error.log",
+            level: "error",
+          }),
+
+          new transports.File({
+            filename: "logs/combined.log",
+          }),
+        ]
+      : []),
   ],
 });
 
