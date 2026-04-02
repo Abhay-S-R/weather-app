@@ -90,7 +90,9 @@ function ChatPanel({ weather }) {
       setMessages([
         {
           role: "assistant",
-          text: err.message || "Hi! I'm your weather assistant. Ask me anything about the weather! 🌤️",
+          text:
+            err.message ||
+            "Hi! I'm your weather assistant. Ask me anything about the weather! 🌤️",
         },
       ]);
     } finally {
@@ -107,7 +109,12 @@ function ChatPanel({ weather }) {
     setIsLoading(true);
 
     try {
-      const reply = await sendChatMessage(weather.city, weather, messages, trimmed);
+      const reply = await sendChatMessage(
+        weather.city,
+        weather,
+        messages,
+        trimmed,
+      );
       setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
     } catch (err) {
       setMessages((prev) => [
@@ -140,31 +147,51 @@ function ChatPanel({ weather }) {
         className={`chat-fab ${isOpen ? "active" : ""}`}
         onClick={handleFabClick}
         title="Weather Assistant"
-        aria-label={isOpen ? "Close weather assistant" : "Open weather assistant"}
+        aria-label={
+          isOpen ? "Close weather assistant" : "Open weather assistant"
+        }
         aria-expanded={isOpen}
       >
-        <span className="chat-fab-icon" aria-hidden="true">{isOpen ? "✕" : "💬"}</span>
+        <span className="chat-fab-icon" aria-hidden="true">
+          {isOpen ? "✕" : "💬"}
+        </span>
         <span className="chat-fab-pulse" aria-hidden="true" />
       </button>
 
       {/* Chat Panel */}
       {isOpen && (
-        <div className="chat-panel" ref={panelRef} role="dialog" aria-label="Weather assistant chat">
+        <div
+          className="chat-panel"
+          ref={panelRef}
+          role="dialog"
+          aria-label="Weather assistant chat"
+        >
           <div className="chat-panel-header">
-            <span className="chat-header-icon" aria-hidden="true">🤖</span>
+            <span className="chat-header-icon" aria-hidden="true">
+              🤖
+            </span>
             <div className="chat-header-text">
               <span className="chat-header-title">Weather Assistant</span>
               <span className="chat-header-subtitle">{weather.city}</span>
             </div>
           </div>
 
-          <div className="chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
+          <div
+            className="chat-messages"
+            role="log"
+            aria-live="polite"
+            aria-label="Chat messages"
+          >
             {messages.map((msg, idx) => (
               <div key={idx} className={`chat-msg chat-msg-${msg.role}`}>
                 {msg.role === "assistant" && (
-                  <span className="chat-avatar" aria-hidden="true">🤖</span>
+                  <span className="chat-avatar" aria-hidden="true">
+                    🤖
+                  </span>
                 )}
-                <div className={`chat-bubble ${msg.text.includes("touch grass") || msg.text.includes("take rest") ? "error-bubble" : ""}`}>
+                <div
+                  className={`chat-bubble ${msg.text.includes("touch grass") || msg.text.includes("take rest") ? "error-bubble" : ""}`}
+                >
                   <p>{msg.text}</p>
                 </div>
               </div>
@@ -172,8 +199,14 @@ function ChatPanel({ weather }) {
 
             {isLoading && (
               <div className="chat-msg chat-msg-assistant">
-                <span className="chat-avatar" aria-hidden="true">🤖</span>
-                <div className="chat-bubble chat-typing" role="status" aria-label="Assistant is typing">
+                <span className="chat-avatar" aria-hidden="true">
+                  🤖
+                </span>
+                <div
+                  className="chat-bubble chat-typing"
+                  role="status"
+                  aria-label="Assistant is typing"
+                >
                   <span className="dot" aria-hidden="true" />
                   <span className="dot" aria-hidden="true" />
                   <span className="dot" aria-hidden="true" />

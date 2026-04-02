@@ -26,7 +26,7 @@ function useWeather() {
           signal: controller.signal,
         });
         const ipData = await ipResponse.json().catch(() => ({}));
-        
+
         if (!ipResponse.ok) {
           if (ipResponse.status === 429) {
             throw new Error(ipData.error);
@@ -124,7 +124,7 @@ function useWeather() {
         1,
         controller.signal,
       );
-      
+
       if (geoData.length === 0) throw new Error("City not found");
 
       const { lat, lon, name, state, country } = geoData[0];

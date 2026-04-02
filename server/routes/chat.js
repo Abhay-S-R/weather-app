@@ -26,7 +26,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const strictLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 21,
+  max: 51,
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
@@ -37,11 +37,11 @@ const strictLimiter = rateLimit({
   handler: (req, res, next, options) => {
     logger.warn("Rate limit exceeded", {
       method: req.method,
-      ip:req.ip,
-      url: req.originalUrl
+      ip: req.ip,
+      url: req.originalUrl,
     });
     res.status(options.statusCode).json(options.message);
-  }
+  },
 });
 // Replicate toLocalTime from client utils (everything in ms)
 function toLocalTime(unixTime, timeMilliSecs) {
@@ -91,7 +91,7 @@ function buildSystemInstruction(city, weatherData) {
 router.post("/", strictLimiter, async (req, res, next) => {
   try {
     const validatedData = chatObjectSchema.parse(req.body);
-    const  {city, weatherData, history, message} = validatedData;
+    const { city, weatherData, history, message } = validatedData;
 
     const systemInstruction = buildSystemInstruction(city, weatherData);
 

@@ -38,11 +38,11 @@ const globalLimiter = rateLimit({
   handler: (req, res, next, options) => {
     logger.warn("Rate limit exceeded", {
       method: req.method,
-      ip:req.ip,
-      url: req.originalUrl
+      ip: req.ip,
+      url: req.originalUrl,
     });
     res.status(options.statusCode).json(options.message);
-  }
+  },
 });
 
 app.use(globalLimiter);

@@ -12,7 +12,6 @@ function DropdownItem({
   name,
   meta,
 }) {
-
   //Currently of no use as I use only 5 suggestions, but it is a good practice to have it for large lists
   const itemRef = useRef(null);
   useEffect(() => {
@@ -111,16 +110,16 @@ function SearchBar({
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      if(selectedIndex === maxIndex){
+      if (selectedIndex === maxIndex) {
         setSelectedIndex(0);
-      }else{
+      } else {
         setSelectedIndex((prev) => (prev < maxIndex ? prev + 1 : prev));
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      if(selectedIndex === 0){
+      if (selectedIndex === 0) {
         setSelectedIndex(maxIndex);
-      }else{
+      } else {
         setSelectedIndex((prev) => (prev > -1 ? prev - 1 : -1));
       }
     } else if (e.key === "Enter") {
