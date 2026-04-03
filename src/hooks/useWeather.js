@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { preLoadImg } from "../utils/preLoadImg";
 import {
   fetchWeatherData,
@@ -119,11 +119,7 @@ function useWeather() {
     weatherControllerRef.current = controller;
 
     try {
-      const { geoResponse, geoData } = await fetchGeoData(
-        city,
-        1,
-        controller.signal,
-      );
+      const { geoData } = await fetchGeoData(city, 1, controller.signal);
 
       if (geoData.length === 0) throw new Error("City not found");
 
@@ -219,7 +215,7 @@ function useWeather() {
     );
   };
 
-  const bgUrl = getBackground(weather?.icon);
+  const bgUrl = useMemo(() => getBackground(weather?.icon), [weather?.icon]);
 
   return {
     weather,

@@ -43,7 +43,7 @@ export const fetchGeoData = async (query, limit = 1, signal) => {
     throw new Error("Failed to fetch geo data");
   }
 
-  return { geoResponse, geoData };
+  return { geoData };
 };
 
 //GeoCoding API - reverse

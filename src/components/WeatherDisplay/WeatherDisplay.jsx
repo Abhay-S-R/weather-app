@@ -2,37 +2,37 @@ import "./WeatherDisplay.css";
 import { toLocalTime } from "../../utils/localTime";
 import { useState, useEffect } from "react";
 
+const toF = (c) => Math.round((c * 9) / 5 + 32);
+const displayTemp = (c, useFahrenheit) => (useFahrenheit ? toF(c) : c);
+const to12h = (timeStr) => {
+  if (!timeStr) return timeStr;
+  const parts = timeStr.split(":");
+  let hours = parseInt(parts[0], 10);
+  const suffix = hours >= 12 ? " PM" : " AM";
+  hours = hours % 12 || 12;
+  return `${hours}:${parts.slice(1).join(":")}${suffix}`;
+};
+const displayTime = (t, use12Hour) => (use12Hour ? to12h(t) : t);
+
+const getVisibilityInfo = (meters) => {
+  const km = meters / 1000;
+  if (km >= 10)
+    return { desc: "Excellent", tip: "Crystal clear, horizon sharp" };
+  if (km >= 5) return { desc: "Good", tip: "Clear, slight haze far away" };
+  if (km >= 2)
+    return { desc: "Moderate", tip: "Noticeable haze, distant objects fade" };
+  if (km >= 1)
+    return { desc: "Poor", tip: "Fog/smog, visibility clearly reduced" };
+  return { desc: "Very Poor", tip: "Dense fog, unsafe for driving" };
+};
+
 function WeatherDisplay({ weather }) {
   const [localTime, setLocalTime] = useState("");
   const [useFahrenheit, setUseFahrenheit] = useState(false);
   const [use12Hour, setUse12Hour] = useState(false);
   const [showGust, setShowGust] = useState(false);
 
-  const toF = (c) => Math.round((c * 9) / 5 + 32);
   const unit = useFahrenheit ? "°F" : "°C";
-  const displayTemp = (c) => (useFahrenheit ? toF(c) : c);
-
-  const to12h = (timeStr) => {
-    if (!timeStr) return timeStr;
-    const parts = timeStr.split(":");
-    let hours = parseInt(parts[0], 10);
-    const suffix = hours >= 12 ? " PM" : " AM";
-    hours = hours % 12 || 12;
-    return `${hours}:${parts.slice(1).join(":")}${suffix}`;
-  };
-  const displayTime = (t) => (use12Hour ? to12h(t) : t);
-
-  const getVisibilityInfo = (meters) => {
-    const km = meters / 1000;
-    if (km >= 10)
-      return { desc: "Excellent", tip: "Crystal clear, horizon sharp" };
-    if (km >= 5) return { desc: "Good", tip: "Clear, slight haze far away" };
-    if (km >= 2)
-      return { desc: "Moderate", tip: "Noticeable haze, distant objects fade" };
-    if (km >= 1)
-      return { desc: "Poor", tip: "Fog/smog, visibility clearly reduced" };
-    return { desc: "Very Poor", tip: "Dense fog, unsafe for driving" };
-  };
 
   useEffect(() => {
     if (!weather) return;
