@@ -44,7 +44,7 @@ weather-app/
 │   │   ├── WeatherDisplay/ # Weather data cards
 │   │   ├── WeatherSkeleton/# Loading skeleton UI
 │   │   ├── Footer/         # App footer
-│   │   └── ErrorBoundry/   # Error boundary wrapper
+│   │   └── ErrorBoundary/   # Error boundary wrapper
 │   ├── hooks/              # Custom React hooks
 │   ├── services/           # API service functions
 │   ├── utils/              # Utility functions

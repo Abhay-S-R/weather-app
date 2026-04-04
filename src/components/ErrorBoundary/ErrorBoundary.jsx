@@ -1,7 +1,7 @@
-import "./ErrorBoundry.css";
+import "./ErrorBoundary.css";
 import { Component } from "react";
 
-class ErrorBoundry extends Component {
+class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     // 1. Initialize state: hasError tracks if a crash happened,
@@ -18,7 +18,7 @@ class ErrorBoundry extends Component {
   // 3. This is called after the error has been caught.
   // It's the best place to log errors to a service (like Sentry) or the console.
   componentDidCatch(error, errorInfo) {
-    console.error("ErrorBoundry caught an error:", error, errorInfo);
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
   // 4. A helper function to let the user "reset" the error state
@@ -49,4 +49,4 @@ class ErrorBoundry extends Component {
   }
 }
 
-export default ErrorBoundry;
+export default ErrorBoundary;

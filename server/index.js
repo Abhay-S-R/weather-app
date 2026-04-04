@@ -20,6 +20,16 @@ app.use(
   }),
 );
 app.use(express.json());
+
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    if (req.headers["x-forwarded-proto"] !== "https") {
+      return res.redirect(301, `https://${req.hostname}${req.originalUrl}`);
+    }
+    next();
+  });
+}
+
 app.use(
   morgan("combined", {
     stream: { write: (message) => logger.info(message.trim()) },

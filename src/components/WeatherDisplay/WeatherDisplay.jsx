@@ -1,5 +1,5 @@
 import "./WeatherDisplay.css";
-import { toLocalTime } from "../../utils/localTime";
+import { toLocalTime } from "../../../shared/localTime";
 import { useState, useEffect } from "react";
 
 const toF = (c) => Math.round((c * 9) / 5 + 32);

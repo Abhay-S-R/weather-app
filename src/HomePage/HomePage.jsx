@@ -4,8 +4,9 @@ import WeatherDisplay from "../components/WeatherDisplay";
 import ChatPanel from "../components/ChatPanel";
 import useWeather from "../hooks/useWeather.js";
 import useSearchHistory from "../hooks/useSearchHistory.js";
-import ErrorBoundry from "../components/ErrorBoundry";
+import ErrorBoundary from "../components/ErrorBoundary/index.js";
 import WeatherSkeleton from "../components/WeatherSkeleton";
+import { useCallback } from "react";
 
 function HomePage() {
   const {
@@ -23,6 +24,14 @@ function HomePage() {
   } = useWeather();
 
   const { searchHistory, clearHistory } = useSearchHistory(weather);
+  const handleSearch = useCallback(
+    (city) => searchByCity(city),
+    [searchByCity],
+  );
+  const handleSelectSuggestion = useCallback(
+    (s) => searchByCoords(s.lat, s.lon, s.name, s.state, s.country),
+    [searchByCoords],
+  );
 
   return (
     <>
@@ -44,10 +53,8 @@ function HomePage() {
       </header>
 
       <SearchBar
-        onSearch={(city) => searchByCity(city)}
-        onSelectSuggestion={(s) =>
-          searchByCoords(s.lat, s.lon, s.name, s.state, s.country)
-        }
+        onSearch={handleSearch}
+        onSelectSuggestion={handleSelectSuggestion}
         onGetCurrentLocation={getCurrentLocation}
         searchHistory={searchHistory}
         clearHistory={clearHistory}
@@ -65,12 +72,12 @@ function HomePage() {
         <div
           className={`weather-content ${transitioning ? "transitioning" : ""}`}
         >
-          <ErrorBoundry>
+          <ErrorBoundary>
             <WeatherDisplay weather={weather} />
-          </ErrorBoundry>
-          <ErrorBoundry>
+          </ErrorBoundary>
+          <ErrorBoundary>
             <ChatPanel weather={weather} />
-          </ErrorBoundry>
+          </ErrorBoundary>
         </div>
       )}
     </>

@@ -4,13 +4,13 @@ import { z } from "zod";
 import logger from "../utils/logger.js";
 
 const geoDirectSchema = z.object({
-  q: z.string(),
+  q: z.string().max(200),
   limit: z.coerce.number().int().optional().default(1),
 });
 
 const geoReverseSchema = z.object({
-  lat: z.string(),
-  lon: z.string(),
+  lat: z.coerce.number().min(-90).max(90),
+  lon: z.coerce.number().min(-180).max(180),
 });
 
 const router = express.Router();
@@ -56,8 +56,8 @@ router.get("/reverse", async (req, res, next) => {
     const { lat, lon } = validatedData;
 
     const TTL = 24 * 60 * 60 * 1000;
-    const latNum = parseFloat(lat).toFixed(3);
-    const lonNum = parseFloat(lon).toFixed(3);
+    const latNum = lat.toFixed(3);
+    const lonNum = lon.toFixed(3);
     const key = `geo:reverse:${latNum}:${lonNum}`;
     const cached = cacheGet(key);
     if (cached) return res.json(cached);

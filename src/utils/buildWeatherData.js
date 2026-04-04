@@ -1,4 +1,4 @@
-import { toLocalTime } from "./localTime.js";
+import { toLocalTime } from "../../shared/localTime.js";
 
 export function buildWeatherData(data, name, state, country) {
   const timeSecs = data.timezone / 3600;

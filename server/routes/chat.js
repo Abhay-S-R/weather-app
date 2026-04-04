@@ -3,6 +3,14 @@ import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import logger from "../utils/logger.js";
+import { toLocalTime } from "../../shared/localTime.js";
+
+const API_KEY = process.env.GEMINI_API_KEY;
+
+if (!API_KEY) {
+  logger.error("FATAL: GEMINI_API_KEY is not set");
+  process.exit(1);
+}
 
 const chatObjectSchema = z.object({
   city: z.string().min(1, "City name is required").max(100),
@@ -15,14 +23,14 @@ const chatObjectSchema = z.object({
     .array(
       z.object({
         role: z.enum(["user", "assistant"]),
-        text: z.string(),
+        text: z.string().max(10000),
       }),
-    )
+    ).max(20)
     .optional(),
 });
 
 const router = express.Router();
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 const strictLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -43,13 +51,6 @@ const strictLimiter = rateLimit({
     res.status(options.statusCode).json(options.message);
   },
 });
-// Replicate toLocalTime from client utils (everything in ms)
-function toLocalTime(unixTime, timeMilliSecs) {
-  const date = new Date(unixTime + timeMilliSecs);
-  const hours = String(date.getUTCHours()).padStart(2, "0");
-  const mins = String(date.getUTCMinutes()).padStart(2, "0");
-  return `${hours}:${mins}`;
-}
 
 function buildSystemInstruction(city, weatherData) {
   const localTime = toLocalTime(Date.now(), weatherData.timeSecs * 1000);
