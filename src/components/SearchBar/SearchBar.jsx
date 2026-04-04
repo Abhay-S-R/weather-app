@@ -105,7 +105,7 @@ function SearchBar({
         ? searchHistory
         : [];
 
-    //Since we have "Use my current location maxIndex will be +1"
+    //Since we have "Use my current location" maxIndex will be +1
     const maxIndex = activeList.length;
 
     if (e.key === "ArrowDown") {

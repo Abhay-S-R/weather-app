@@ -25,7 +25,7 @@ const chatObjectSchema = z.object({
         role: z.enum(["user", "assistant"]),
         text: z.string().max(10000),
       }),
-    ).max(20)
+    ).max(10)
     .optional(),
 });
 
@@ -55,6 +55,7 @@ const strictLimiter = rateLimit({
 function buildSystemInstruction(city, weatherData) {
   const localTime = toLocalTime(Date.now(), weatherData.timeSecs * 1000);
 
+  // API response will take time if the raw weatherData object is passed, as it contains tons of data
   const context = {
     localTime,
     timeZone: weatherData.timeZone,

@@ -2,6 +2,7 @@ import "./WeatherDisplay.css";
 import { toLocalTime } from "../../../shared/localTime";
 import { useState, useEffect } from "react";
 
+// Pure functions
 const toF = (c) => Math.round((c * 9) / 5 + 32);
 const displayTemp = (c, useFahrenheit) => (useFahrenheit ? toF(c) : c);
 const to12h = (timeStr) => {

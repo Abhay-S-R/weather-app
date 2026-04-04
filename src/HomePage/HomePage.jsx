@@ -20,10 +20,12 @@ function HomePage() {
     searchByCoords,
     searchByCity,
     getCurrentLocation,
-    setError,
+    setError, // Good practice to have setError even if it's unused
   } = useWeather();
 
   const { searchHistory, clearHistory } = useSearchHistory(weather);
+
+  // Cache both the functions as it need not re-render with every keyboard stroke on the search bar
   const handleSearch = useCallback(
     (city) => searchByCity(city),
     [searchByCity],

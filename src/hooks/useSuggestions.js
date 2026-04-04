@@ -10,7 +10,7 @@ function useSuggestions() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const dropdownRef = useRef(null);
-  const inputRef = useRef(null);
+  const inputRef = useRef(null); // Mainly used for mobile keyboards
   const controllerRef = useRef(null);
   const debounceRef = useRef(null);
 
@@ -22,7 +22,7 @@ function useSuggestions() {
       controllerRef.current?.abort();
       return;
     }
-    // User is typing 3+ chars — hide history, show suggestions
+    // User is typing 3+ chars - hide history, show suggestions
     setShowHistory(false);
 
     //Clear previous timer

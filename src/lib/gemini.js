@@ -13,6 +13,8 @@ export const sendChatMessage = async (city, weatherData, history, message) => {
   }
 
   // Handle rate-limit errors outside try-catch so they never get swallowed
+  // This is to display the custom error message
+  // Hence it has its own catch block
   if (response.status === 429) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
@@ -20,6 +22,7 @@ export const sendChatMessage = async (city, weatherData, history, message) => {
     );
   }
 
+  // Generic server error message
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     console.error(`Backend Error (${response.status}):`, errorData);

@@ -215,6 +215,9 @@ function useWeather() {
     );
   };
 
+  // The getBackground is just doing a mapping based search
+  // Regardless it is a good practice to memoize it. 
+  // Note: Memoization will have an impact only when an expensive function need not be executed with every re-render, unless the function itself changes
   const bgUrl = useMemo(() => getBackground(weather?.icon), [weather?.icon]);
 
   return {

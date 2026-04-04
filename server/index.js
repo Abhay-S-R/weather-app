@@ -65,7 +65,6 @@ app.use("/api/weather", weatherRoutes);
 app.use("/api/geo", geoRoutes);
 app.use("/api/chat", chatRoutes);
 
-// 404 catch-all — must be after all defined routes
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
@@ -95,7 +94,7 @@ app.use((err, req, res, next) => {
     stack: err.stack,
   };
 
-  if (statusCode === 500) {
+  if (statusCode === 429 || statusCode >= 500) {
     logger.error(err.message || "Internal server error", logEntry);
   } else {
     logger.warn(err.message, logEntry);
