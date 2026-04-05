@@ -64,6 +64,13 @@ app.get("/", (req, res) => {
 app.use("/api/weather", weatherRoutes);
 app.use("/api/geo", geoRoutes);
 app.use("/api/chat", chatRoutes);
+app.get("/health", (req, res) => {
+  if (req.headers["x-cron-secret"] !== process.env.CRON_SECRET) {
+    return res.status(401).send("unauthorized");
+  }
+
+  res.status(200).send("ok");
+});
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
