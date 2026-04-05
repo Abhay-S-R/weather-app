@@ -1,65 +1,38 @@
-# Havamana — Real-Time Weather App
+# Havamana: Real-Time Weather App
 
 A modern, full-stack weather application with real-time weather data, city search, geolocation, and an AI-powered weather assistant.
 
-**Live Demo:** [havamana.onrender.com](https://havamana.onrender.com)
+**Live Demo:** [havamana.vercel.app](https://havamana.vercel.app)
 
 ## Features
 
-- 🌦️ **Real-Time Weather** — Temperature, humidity, wind speed, pressure, visibility, and cloudiness
-- 🔍 **City Search** — Search any city worldwide with autocomplete suggestions
-- 📍 **Geolocation** — Auto-detect your location on page load
-- 🤖 **AI Weather Assistant** — Chat with a Gemini-powered assistant that gives personalized weather advice
-- 🌅 **Dynamic Backgrounds** — Background images change based on weather conditions and time of day
-- 💀 **Skeleton Loading** — Smooth loading states that match the UI layout
-- 📱 **Responsive Design** — Works on desktop, tablet, and mobile
+- **Real-Time Weather**: Temperature, humidity, wind speed, pressure, visibility, and cloudiness
+- **City Search**: Search any city worldwide with autocomplete suggestions
+- **Geolocation**: Auto-detect your location on page load
+- **AI Weather Assistant**: Chat with a Gemini-powered assistant that gives personalized weather advice
+- **Dynamic Backgrounds**: Background images change based on weather conditions and time of day
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Analytics**: Vercel Web Analytics for visitor insights
 
 ## Tech Stack
 
 ### Frontend
-- **React 19** + **Vite** — Fast development and optimized production builds
-- **Vanilla CSS** — Custom styling with animations and glassmorphism effects
+- **React 19** + **Vite**: Fast development and optimized production builds
+- **Vanilla CSS**: Custom styling with animations and glassmorphism effects
+- **Vercel Analytics**: Built-in web analytics
 
 ### Backend
-- **Express 5** — API proxy server with route handlers
-- **Zod** — Request validation on all API endpoints
-- **Winston** — Structured logging with environment-aware transports
-- **Helmet** — HTTP security headers
-- **express-rate-limit** — Global and per-route rate limiting
-- **LRU Cache** — In-memory caching for API responses
+- **Express 5**: API proxy server with route handlers
+- **Zod**: Request validation on all API endpoints
+- **Winston**: Structured logging with environment-aware transports
+- **Helmet**: HTTP security headers
+- **express-rate-limit**: Global and per-route rate limiting
+- **LRU Cache**: In-memory caching for API responses
 
 ### External APIs
-- [OpenWeather API](https://openweathermap.org/api) — Weather data and geocoding
-- [GeoJS](https://www.geojs.io/) — IP-based geolocation
-- [Google Gemini](https://ai.google.dev/) — AI chat assistant
-
-## Project Structure
-
-```
-weather-app/
-├── src/                    # Frontend (React)
-│   ├── components/         # UI components
-│   │   ├── ChatPanel/      # AI weather chat interface
-│   │   ├── SearchBar/      # City search with autocomplete
-│   │   ├── WeatherDisplay/ # Weather data cards
-│   │   ├── WeatherSkeleton/# Loading skeleton UI
-│   │   ├── Footer/         # App footer
-│   │   └── ErrorBoundary/   # Error boundary wrapper
-│   ├── hooks/              # Custom React hooks
-│   ├── services/           # API service functions
-│   ├── utils/              # Utility functions
-│   └── HomePage/           # Main page component
-├── server/                 # Backend (Express)
-│   ├── routes/
-│   │   ├── weather.js      # /api/weather — weather data proxy
-│   │   ├── geo.js          # /api/geo — geocoding & IP location
-│   │   └── chat.js         # /api/chat — AI assistant endpoint
-│   ├── utils/
-│   │   ├── cache.js        # LRU cache utility
-│   │   └── logger.js       # Winston logger setup
-│   └── index.js            # Server entry point
-└── README.md
-```
+- [OpenWeather API](https://openweathermap.org/api): Weather data and geocoding
+- [GeoJS](https://www.geojs.io/): IP-based geolocation
+- [Google Gemini](https://ai.google.dev/): AI chat assistant
 
 ## Getting Started
 
@@ -92,6 +65,7 @@ Create a `.env` file in the `server/` directory:
 OPENWEATHER_API_KEY=your_openweather_key
 GEMINI_API_KEY=your_gemini_key
 CORS_ORIGIN=http://localhost:5173
+CRON_SECRET=your_cron_secret
 ```
 
 ### Running Locally
@@ -111,14 +85,12 @@ The app will be available at `http://localhost:5173`
 
 ## Deployment
 
-This app is deployed on [Render](https://render.com) as two services:
+The app is split across two platforms:
 
-| Service | Type | Root Directory |
+| Service | Platform | Details |
 |---|---|---|
-| Frontend | Static Site | `/` (repo root) |
-| Backend | Web Service | `server/` |
-
-The frontend uses Render's rewrite rules to proxy `/api/*` requests to the backend service.
+| Frontend | [Vercel](https://vercel.com) | Static site with edge CDN |
+| Backend | [Render](https://render.com) | Web service (`server/` root directory) |
 
 ### Backend Environment Variables (Render)
 
@@ -126,6 +98,6 @@ The frontend uses Render's rewrite rules to proxy `/api/*` requests to the backe
 |---|---|
 | `OPENWEATHER_API_KEY` | OpenWeather API key |
 | `GEMINI_API_KEY` | Google Gemini API key |
-| `CORS_ORIGIN` | Frontend URL |
+| `CORS_ORIGIN` | Frontend URL (e.g. `https://havamana.vercel.app`) |
+| `CRON_SECRET` | Secret for the keep-alive health check |
 | `NODE_ENV` | Set to `production` |
-
