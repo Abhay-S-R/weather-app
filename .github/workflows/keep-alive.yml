@@ -3,6 +3,7 @@ name: keep render awake
 on:
   schedule:
     - cron: "*/10 * * * *"   # every 10 minutes
+  workflow_dispatch:          # allows manual trigger
 
 jobs:
   ping:
