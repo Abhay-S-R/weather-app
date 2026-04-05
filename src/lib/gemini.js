@@ -1,8 +1,10 @@
+import { API_BASE } from "../config/api";
+
 export const sendChatMessage = async (city, weatherData, history, message) => {
   let response;
 
   try {
-    response = await fetch("/api/chat", {
+    response = await fetch(`${API_BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ city, weatherData, history, message }),

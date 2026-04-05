@@ -6,6 +6,7 @@ import {
   fetchReverseGeoData,
 } from "../services/weatherApi";
 import { getBackground } from "../utils/getBackground";
+import { API_BASE } from "../config/api";
 
 function useWeather() {
   const [weather, setWeather] = useState(null);
@@ -22,7 +23,7 @@ function useWeather() {
 
     const getIpData = async () => {
       try {
-        const ipResponse = await fetch("/api/geo/ip", {
+        const ipResponse = await fetch(`${API_BASE}/api/geo/ip`, {
           signal: controller.signal,
         });
         const ipData = await ipResponse.json().catch(() => ({}));

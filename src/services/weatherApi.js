@@ -1,4 +1,5 @@
 import { buildWeatherData } from "../utils/buildWeatherData";
+import { API_BASE } from "../config/api";
 
 //All API responses are in seconds
 
@@ -11,7 +12,7 @@ export const fetchWeatherData = async (
   country,
   signal,
 ) => {
-  const weatherResponse = await fetch(`/api/weather?lat=${lat}&lon=${lon}`, {
+  const weatherResponse = await fetch(`${API_BASE}/api/weather?lat=${lat}&lon=${lon}`, {
     signal: signal,
   });
   
@@ -30,7 +31,7 @@ export const fetchWeatherData = async (
 //GeoCoding API - direct
 export const fetchGeoData = async (query, limit = 1, signal) => {
   const geoResponse = await fetch(
-    `/api/geo/direct?q=${encodeURIComponent(query)}&limit=${limit}`,
+    `${API_BASE}/api/geo/direct?q=${encodeURIComponent(query)}&limit=${limit}`,
     { signal: signal },
   );
 
@@ -48,7 +49,7 @@ export const fetchGeoData = async (query, limit = 1, signal) => {
 
 //GeoCoding API - reverse
 export const fetchReverseGeoData = async (lat, lon, signal) => {
-  const geoResponse = await fetch(`/api/geo/reverse?lat=${lat}&lon=${lon}`, {
+  const geoResponse = await fetch(`${API_BASE}/api/geo/reverse?lat=${lat}&lon=${lon}`, {
     signal: signal,
   });
 
