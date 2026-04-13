@@ -65,7 +65,6 @@ Create a `.env` file in the `server/` directory:
 OPENWEATHER_API_KEY=your_openweather_key
 GEMINI_API_KEY=your_gemini_key
 CORS_ORIGIN=http://localhost:5173
-CRON_SECRET=your_cron_secret
 ```
 
 ### Running Locally
@@ -99,5 +98,4 @@ The app is split across two platforms:
 | `OPENWEATHER_API_KEY` | OpenWeather API key |
 | `GEMINI_API_KEY` | Google Gemini API key |
 | `CORS_ORIGIN` | Frontend URL (e.g. `https://havamana.vercel.app`) |
-| `CRON_SECRET` | Secret for the keep-alive health check |
 | `NODE_ENV` | Set to `production` |
