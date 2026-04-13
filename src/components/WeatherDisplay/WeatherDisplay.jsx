@@ -66,7 +66,7 @@ function WeatherDisplay({ weather }) {
       <div className="weather-hero">
         <img className="weather-icon" src={iconUrl} alt={weather.description} />
         <p className="temperature">
-          {displayTemp(weather.temp)}
+          {displayTemp(weather.temp, useFahrenheit)}
           {unit}
         </p>
       </div>
@@ -104,7 +104,7 @@ function WeatherDisplay({ weather }) {
           <div className="detail-content">
             <span className="detail-label">Feels Like</span>
             <span className="detail-value">
-              {displayTemp(weather.feelsLike)}
+              {displayTemp(weather.feelsLike, useFahrenheit)}
               {unit}
             </span>
           </div>
@@ -136,7 +136,7 @@ function WeatherDisplay({ weather }) {
           </span>
           <div className="detail-content">
             <span className="detail-label">Local Time</span>
-            <span className="detail-value">{displayTime(localTime)}</span>
+            <span className="detail-value">{displayTime(localTime, use12Hour)}</span>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ function WeatherDisplay({ weather }) {
           </span>
           <div className="detail-content">
             <span className="detail-label">Sunrise</span>
-            <span className="detail-value">{displayTime(weather.sunrise)}</span>
+            <span className="detail-value">{displayTime(weather.sunrise, use12Hour)}</span>
           </div>
         </div>
 
@@ -156,7 +156,7 @@ function WeatherDisplay({ weather }) {
           </span>
           <div className="detail-content">
             <span className="detail-label">Sunset</span>
-            <span className="detail-value">{displayTime(weather.sunset)}</span>
+            <span className="detail-value">{displayTime(weather.sunset, use12Hour)}</span>
           </div>
         </div>
         <div className="detail-item visibility-item">
