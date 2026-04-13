@@ -3,7 +3,6 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
 import weatherRoutes from "./routes/weather.js";
 import geoRoutes from "./routes/geo.js";
 import chatRoutes from "./routes/chat.js";
@@ -35,27 +34,6 @@ app.use(
     stream: { write: (message) => logger.info(message.trim()) },
   }),
 );
-
-const globalLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: { trustProxy: false },
-  message: {
-    error: "You've looked at Weather for a while, it's time to touch grass",
-  },
-  handler: (req, res, next, options) => {
-    logger.warn("Rate limit exceeded", {
-      method: req.method,
-      ip: req.ip,
-      url: req.originalUrl,
-    });
-    res.status(options.statusCode).json(options.message);
-  },
-});
-
-app.use(globalLimiter);
 
 app.get("/", (req, res) => {
   res.json({ status: "success", message: "hello world" });
